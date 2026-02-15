@@ -1,0 +1,218 @@
+/* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Body and dashboard container */
+body {
+    background-color: #121212; /* Dark background */
+    color: #fff;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #1c1c1c; /* Slightly lighter black */
+    padding: 15px 30px;
+    border-bottom: 2px solid #e63946; /* Red underline */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+    gap: 40px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.navbar ul li a:hover {
+    color: #e63946; /* Red highlight on hover */
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin: 40px 0;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: #e63946; /* Red for header */
+}
+
+/* Travel Types Section */
+.travel-types {
+    display: flex;
+    justify-content: center;   /* center horizontally */
+    gap: 20px;                 /* space between cards */
+    margin: 30px 0;
+    flex-wrap: wrap;           /* stack on smaller screens */
+}
+
+.card-link {
+    text-decoration: none;     /* remove underline from links */
+}
+
+.card {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    width: 250px;              /* fixed width */
+    height: 300px;             /* fixed height */
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #e63946;
+}
+
+.card img {
+    width: 100%;
+    height: 60%;               /* image takes 60% of card height */
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+}
+
+.card h2 {
+    color: #e63946;
+    margin: 10px 0 5px 0;
+    font-size: 1.2rem;
+}
+
+.card p {
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+/* Trip Status Section */
+.trip-status {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.status-card {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    padding: 20px 40px;
+    text-align: center;
+    flex: 1 1 200px;
+}
+
+.status-card h3 {
+    color: #e63946;
+    margin-bottom: 10px;
+}
+
+.status-card span {
+    font-size: 2rem;
+    color: #fff;
+}
+
+/* Discover Section */
+.discover {
+    margin: 70px 0;
+}
+
+.discover h2 {
+    color: #e63946;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.discover-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.small-card {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    padding: 20px 30px;
+    text-align: center;
+    flex: 1 1 200px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.small-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #e63946;
+}
+
+/* Footer */
+footer {
+    background-color: #1c1c1c;
+    border-top: 2px solid #e63946;
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+footer h3 {
+    color: #e63946;
+    margin-bottom: 15px;
+}
+
+footer p {
+    margin: 5px 0;
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .travel-types, .trip-status, .discover-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+    .navbar ul {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+/* Optional card image classes (if used) */
+.card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 15px;
+}
+
+.small-card-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 10px;
+}

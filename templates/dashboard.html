@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Travel World Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/dashboard">Home</a></li>
+            <li><a href="#discover">Discover Destinations</a></li>
+            <li><a href="/national">National</a></li>
+            <li><a href="/international">International</a></li>
+            <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/book">Book</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <header id="dashboard">
+        <h1>🌍 Travel Bucket List</h1>
+    </header>
+
+    <!-- Travel Type Section -->
+    <section class="travel-types">
+
+        <a href="/national" class="card-link">
+            <div class="card national">
+                <img src="{{ url_for('static', filename='styles/images/national.avif') }}" alt="National Travel">
+                <h2>National</h2>
+                <p>Explore India</p>
+            </div>
+        </a>
+
+        <a href="/international" class="card-link">
+            <div class="card international">
+                <img src="{{ url_for('static', filename='styles/images/international.jpg') }}" alt="International Travel">
+                <h2>International</h2>
+                <p>Fly over the sea</p>
+            </div>
+        </a>
+
+    </section>
+
+    <!-- Trip Status Section -->
+    <section class="trip-status">
+        <div class="status-card completed">
+            <h3>Completed Trips</h3>
+            <span>{{ completed_count }}</span>
+        </div>
+    </section>
+
+    <!-- Discover Section -->
+    <section class="discover" id="discover">
+        <h2>Discover Destinations</h2>
+
+        <div class="discover-cards">
+
+            <div class="small-card" onclick="window.location.href='/gallery'">
+                📸 Gallery
+            </div>
+
+            <div class="small-card" onclick="window.location.href='/book'">
+                📖 Book
+            </div>
+
+            <div class="small-card">
+                ✨ Experience Travels
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <h3>Next Steps</h3>
+        <p>Email: hello@reallygreatsite.com</p>
+        <p>Phone: 123-456-7890</p>
+    </footer>
+
+</div>
+
+</body>
+</html>

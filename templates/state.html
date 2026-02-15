@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ state.state_name }} - Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/state.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+        <ul>
+            <li><a href="/dashboard">Home</a></li>
+            <li><a href="#discover">Discover Destinations</a></li>
+            <li><a href="/national">National</a></li>
+            <li><a href="/international">International</a></li>
+            <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/book">Book</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+<div class="state-container">
+
+    <!-- STATE HEADER -->
+    <section class="state-header">
+        <h2>{{ state.state_name }}</h2>
+        <p>{{ state.state_description }}</p>
+        <span>Total Places: <strong>{{ state.places_count }}</strong></span>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="categories">
+        <h3>Explore By Category</h3>
+        <div class="category-grid">
+            {% for c in ['trekking','camping','bike ride','waterfalls','visit','temples'] %}
+                <a href="{{ url_for('state_details', state_id=state.id, type=c) }}">{{ c|title }}</a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- PLACES -->
+    <section class="all-places">
+        <div class="places-header">
+            <h3>All Places</h3>
+
+            <form method="GET">
+                <input type="text" name="search" placeholder="Search place..." value="{{ search }}">
+                <button type="submit">Search</button>
+            </form>
+
+            <button class="add-btn" onclick="openModal()">+ Add Place</button>
+        </div>
+
+        <div class="places-grid">
+            {% if places %}
+                {% for place in places %}
+                <div class="place-card">
+                    <img src="{{ url_for('static', filename=place.image) }}" alt="{{ place.place_name }}">
+                    <div class="place-content">
+                        <h4>{{ place.place_name }}</h4>
+                        <p>{{ place.description }}</p>
+                        <span>District: {{ place.district }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No places found.</p>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+
+<!-- ADD PLACE MODAL -->
+<div class="modal" id="placeModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+
+        <h3>Add New Place</h3>
+
+        <form method="POST" action="{{ url_for('add_place', state_id=state.id) }}" enctype="multipart/form-data">
+            <input type="text" name="place_name" placeholder="Place Name" required>
+            <input type="text" name="district" placeholder="District" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <input type="url" name="location_link" placeholder="Google Maps Link" required>
+            <input type="file" name="image" required>
+
+            <label>Type</label>
+            <select name="type" multiple required>
+                <option>trekking</option>
+                <option>temple</option>
+                <option>road trip</option>
+                <option>waterfalls</option>
+                <option>mountains</option>
+                <option>camping</option>
+                <option>bike ride</option>
+            </select>
+
+            <div class="months">
+                <select name="best_time_from" required>
+                    <option value="">From</option>
+                    {% for m in ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+                    <option>{{ m }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="best_time_to" required>
+                    <option value="">To</option>
+                    {% for m in ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+                    <option>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit">Add Place</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal() {
+    document.getElementById("placeModal").style.display = "flex";
+}
+function closeModal() {
+    document.getElementById("placeModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>National - Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/national.css') }}">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="national-container">
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/dashboard">Home</a></li>
+            <li><a href="#discover">Discover Destinations</a></li>
+            <li><a href="/national">National</a></li>
+            <li><a href="/international">International</a></li>
+            <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/book">Book</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- ================= SEARCH + CREATE ================= -->
+    <div class="top-controls">
+        <form method="GET" action="{{ url_for('national') }}">
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Search state..." 
+                class="search-bar"
+                value="{{ search }}"
+            >
+        </form>
+
+        <button id="toggleCreate" class="create-btn">+ Create State</button>
+    </div>
+
+    <!-- ================= STATES GRID ================= -->
+    <div class="states-grid">
+
+    {% if states %}
+        {% for state in states %}
+        <a href="{{ url_for('state_details', state_id=state.id) }}" class="state-link">
+            <div class="state-card">
+                <img 
+                    src="{{ url_for('static', filename=state.state_image) }}"
+                    alt="{{ state.state_name }}"
+                >
+
+                <div class="state-content">
+                    <h3>{{ state.state_name }}</h3>
+                    <p>{{ state.state_description }}</p>
+
+                    <span class="places-count">
+                        Places: <strong>{{ state.places_count }}</strong>
+                    </span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <p style="text-align:center; width:100%;">
+            No states found.
+        </p>
+    {% endif %}
+
+    </div>
+
+
+    <!-- ================= CREATE STATE FORM ================= -->
+    <section class="create-section hidden" id="create-section">
+        <h3>Create New State</h3>
+
+        <form 
+            method="POST" 
+            action="{{ url_for('create_state') }}" 
+            enctype="multipart/form-data"
+        >
+            <input type="text" name="state_name" placeholder="State Name" required>
+            <input type="file" name="state_image" accept="image/*" required>
+            <textarea name="state_description" placeholder="State Description" required></textarea>
+            <button type="submit">Create State</button>
+        </form>
+    </section>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+    const toggleBtn = document.getElementById("toggleCreate");
+    const createSection = document.getElementById("create-section");
+
+    toggleBtn.addEventListener("click", () => {
+        createSection.classList.toggle("hidden");
+        if (!createSection.classList.contains("hidden")) {
+            createSection.scrollIntoView({ behavior: "smooth" });
+        }
+    });
+</script>
+
+</body>
+</html>
