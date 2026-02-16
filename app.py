@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from functools import wraps
 from config import get_db_connection
-import os
 from init_db import init_db
+import os
+from calendar import monthrange
+from datetime import date
 
+# ---------- INIT DB ----------
 init_db()
-
 
 app = Flask(__name__)
 app.secret_key = "travel_secret_key"
@@ -17,10 +20,34 @@ PLACE_UPLOAD = "static/uploads/places"
 os.makedirs(STATE_UPLOAD, exist_ok=True)
 os.makedirs(PLACE_UPLOAD, exist_ok=True)
 
+# ---------- MONTH MAP ----------
+MONTHS = {
+    "January": 1, "February": 2, "March": 3, "April": 4,
+    "May": 5, "June": 6, "July": 7, "August": 8,
+    "September": 9, "October": 10, "November": 11, "December": 12
+}
+
+DUMMY_YEAR = 2000
+
+# ---------- HELPERS ----------
+def is_admin():
+    return session.get("role") == "admin"
+
+
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session or session.get("role") != "admin":
+            abort(403)
+        return f(*args, **kwargs)
+    return wrapper
+
+
 # ---------- HOME ----------
 @app.route("/")
 def home():
     return render_template("login.html")
+
 
 # ---------- REGISTER ----------
 @app.route("/register", methods=["POST"])
@@ -28,7 +55,6 @@ def register():
     data = request.json
     db = get_db_connection()
     cursor = db.cursor()
-
     try:
         cursor.execute("""
             INSERT INTO users (first_name, last_name, contact, email, password)
@@ -43,10 +69,11 @@ def register():
         db.commit()
         return jsonify({"message": "Account created"}), 201
     except:
-        return jsonify({"message": "Email exists"}), 400
+        return jsonify({"message": "Email already exists"}), 400
     finally:
         cursor.close()
         db.close()
+
 
 # ---------- LOGIN ----------
 @app.route("/login", methods=["POST"])
@@ -63,8 +90,12 @@ def login():
 
     if user and check_password_hash(user["password"], data["password"]):
         session["user_id"] = user["id"]
+        session["role"] = user["role"]
+        session["name"] = user["first_name"]
         return jsonify({"message": "Login successful"})
+
     return jsonify({"message": "Invalid credentials"}), 401
+
 
 # ---------- DASHBOARD ----------
 @app.route("/dashboard")
@@ -72,14 +103,8 @@ def dashboard():
     if "user_id" not in session:
         return redirect(url_for("home"))
 
-    db = get_db_connection()
-    cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM completed")
-    completed_count = cursor.fetchone()[0]
-    cursor.close()
-    db.close()
+    return render_template("dashboard.html", role=session["role"])
 
-    return render_template("dashboard.html", completed_count=completed_count)
 
 # ---------- NATIONAL ----------
 @app.route("/national")
@@ -104,21 +129,23 @@ def national():
     cursor.close()
     db.close()
 
-    return render_template("national.html", states=states)
+    return render_template(
+        "national.html",
+        states=states,
+        search=search,
+        is_admin=is_admin()
+    )
 
-# ---------- CREATE STATE ----------
+
+# ---------- CREATE STATE (ADMIN ONLY) ----------
 @app.route("/create-state", methods=["POST"])
+@admin_required
 def create_state():
-    if "user_id" not in session:
-        return redirect(url_for("home"))
-
     image = request.files["state_image"]
     filename = secure_filename(image.filename)
+    image.save(os.path.join(STATE_UPLOAD, filename))
 
-    save_path = os.path.join(STATE_UPLOAD, filename)
-    image.save(save_path)
-
-    db_path = f"uploads/states/{filename}"
+    image_path = f"uploads/states/{filename}"
 
     db = get_db_connection()
     cursor = db.cursor()
@@ -128,7 +155,7 @@ def create_state():
     """, (
         request.form["state_name"],
         request.form["state_description"],
-        db_path
+        image_path
     ))
     db.commit()
     cursor.close()
@@ -136,14 +163,16 @@ def create_state():
 
     return redirect(url_for("national"))
 
+
 # ---------- STATE DETAILS ----------
 @app.route("/state/<int:state_id>")
 def state_details(state_id):
     if "user_id" not in session:
         return redirect(url_for("home"))
 
-    search = request.args.get("search", "")
-    place_type = request.args.get("type", "")
+    search = request.args.get("search", "").strip()
+    selected_types = request.args.getlist("type")
+    selected_month = request.args.get("month", "")
 
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
@@ -152,7 +181,7 @@ def state_details(state_id):
     state = cursor.fetchone()
 
     if not state:
-        return "State not found", 404
+        abort(404)
 
     query = "SELECT * FROM places WHERE state_id=%s"
     params = [state_id]
@@ -161,46 +190,70 @@ def state_details(state_id):
         query += " AND place_name LIKE %s"
         params.append(f"%{search}%")
 
-    if place_type:
-        query += " AND type LIKE %s"
-        params.append(f"%{place_type}%")
+    if selected_types:
+        query += " AND (" + " OR ".join(["FIND_IN_SET(%s, type)"] * len(selected_types)) + ")"
+        params.extend(selected_types)
 
-    cursor.execute(query, tuple(params))
+    if selected_month in MONTHS:
+        m = MONTHS[selected_month]
+        filter_date = date(DUMMY_YEAR, m, 15)
+        query += " AND %s BETWEEN best_time_from AND best_time_to"
+        params.append(filter_date)
+
+    query += " ORDER BY created_at DESC"
+
+    cursor.execute(query, params)
     places = cursor.fetchall()
 
     cursor.close()
     db.close()
 
-    return render_template("state.html", state=state, places=places)
+    return render_template(
+        "state.html",
+        state=state,
+        places=places,
+        is_admin=is_admin(),
+        selected_month=selected_month,
+        selected_types=selected_types,
+        search=search
+    )
 
-# ---------- ADD PLACE ----------
+
+# ---------- ADD PLACE (ADMIN ONLY) ----------
 @app.route("/add-place/<int:state_id>", methods=["POST"])
+@admin_required
 def add_place(state_id):
-    if "user_id" not in session:
-        return redirect(url_for("home"))
-
     image = request.files["image"]
     filename = secure_filename(image.filename)
     image.save(os.path.join(PLACE_UPLOAD, filename))
-    db_path = f"uploads/places/{filename}"
+    image_path = f"uploads/places/{filename}"
+
+    types_str = ",".join(request.form.getlist("type"))
+
+    from_month = MONTHS[request.form["best_time_from"]]
+    to_month = MONTHS[request.form["best_time_to"]]
+
+    from_date = date(DUMMY_YEAR, from_month, 1)
+    to_date = date(DUMMY_YEAR, to_month, monthrange(DUMMY_YEAR, to_month)[1])
 
     db = get_db_connection()
     cursor = db.cursor()
 
     cursor.execute("""
         INSERT INTO places
-        (state_id, place_name, district, description, image, location_link, type, best_time_from, best_time_to)
+        (state_id, place_name, district, description, image,
+         location_link, type, best_time_from, best_time_to)
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
     """, (
         state_id,
         request.form["place_name"],
         request.form["district"],
         request.form["description"],
-        db_path,
+        image_path,
         request.form["location_link"],
-        ",".join(request.form.getlist("type")),
-        request.form["best_time_from"],
-        request.form["best_time_to"]
+        types_str,
+        from_date,
+        to_date
     ))
 
     cursor.execute("""
@@ -215,11 +268,41 @@ def add_place(state_id):
 
     return redirect(url_for("state_details", state_id=state_id))
 
+
+# ---------- DELETE PLACE (ADMIN ONLY) ----------
+@app.route("/delete-place/<int:place_id>/<int:state_id>", methods=["POST"])
+@admin_required
+def delete_place(place_id, state_id):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    cursor.execute("DELETE FROM places WHERE id=%s", (place_id,))
+    cursor.execute("""
+        UPDATE national_states
+        SET places_count = places_count - 1
+        WHERE id=%s
+    """, (state_id,))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return redirect(url_for("state_details", state_id=state_id))
+
+
 # ---------- LOGOUT ----------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
+
+
+# ---------- ERROR ----------
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

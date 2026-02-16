@@ -36,20 +36,21 @@ def init_db():
     """)
 
     # ---------------- PLACES ----------------
+    # ---------------- PLACES ----------------
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS places (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        state_id INT,
-        place_name VARCHAR(150),
-        district VARCHAR(100),
-        description TEXT,
-        image VARCHAR(255),
-        location_link TEXT,
-        type VARCHAR(255),
-        best_time_from VARCHAR(20),
-        best_time_to VARCHAR(20),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (state_id) REFERENCES national_states(id) ON DELETE CASCADE
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    state_id INT,
+    place_name VARCHAR(150),
+    district VARCHAR(100),
+    description TEXT,
+    image VARCHAR(255),
+    location_link TEXT,
+    type VARCHAR(255),
+    best_time_from DATE,
+    best_time_to DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (state_id) REFERENCES national_states(id) ON DELETE CASCADE
     )
     """)
 
