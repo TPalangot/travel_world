@@ -1,0 +1,186 @@
+/* Reset & Body */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #111; /* black background */
+    color: #fff;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #1c1c1c; /* Slightly lighter black */
+    padding: 15px 30px;
+    border-bottom: 2px solid #e63946; /* Red underline */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+    gap: 40px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.navbar ul li a:hover {
+    color: #e63946; /* Red highlight on hover */
+}
+
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+/* Top bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.search-bar {
+    width: 70%;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+}
+
+/* Add Trip Button */
+.add-btn {
+    padding: 10px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #8B0000; /* red */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+.add-btn:hover {
+    background-color: #a30000;
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* Trip Cards */
+.trip-card {
+    background-color: #1a1a1a; /* dark card */
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.trip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+}
+.trip-card h3 {
+    color: #ff4d4d;
+    margin-bottom: 10px;
+}
+.trip-card p, .trip-card a {
+    font-size: 14px;
+    color: #fff;
+}
+.trip-card a {
+    text-decoration: underline;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: #222;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    color: #fff;
+}
+.modal-content h2 {
+    color: #ff4d4d;
+    margin-bottom: 20px;
+}
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+    text-align: right;
+}
+.modal-content button {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+.modal-content button#saveTripBtn {
+    background-color: #8B0000;
+    color: white;
+}
+.modal-content button#saveTripBtn:hover {
+    background-color: #a30000;
+}
+.modal-content button.close-btn {
+    background-color: #555;
+    margin-left: 10px;
+}
+.modal-content button.close-btn:hover {
+    opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .search-bar {
+        width: 100%;
+    }
+    .add-btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,77 @@
+/* Reset & Body */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #111; /* black background */
+    color: #fff;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #8B0000; /* dark red */
+    padding: 15px 30px;
+}
+.navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+.navbar ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+.navbar ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+/* Trip Title Heading */
+#tripTitleHeading {
+    font-size: 28px;
+    color: #ff4d4d; /* red accent */
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* Photos Grid */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Photo Items */
+.photo-item {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.photo-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #tripTitleHeading {
+        font-size: 24px;
+    }
+    .photo-item {
+        height: 150px;
+    }
+}

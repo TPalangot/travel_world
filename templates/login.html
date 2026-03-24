@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Correct Flask Static Path -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/login.css') }}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <h1>🌍 Welcome to Travel World</h1>
+    <p class="subtitle">Explore the beauty of the world</p>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- ================= LOGIN FORM ================= -->
+    <form action="/login" method="POST" id="loginForm" class="form">
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <!-- ================= REGISTER FORM ================= -->
+    <form action="/register" method="POST" id="registerForm" class="form hidden">
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <input type="text" name="last_name" placeholder="Last Name" required>
+        <input type="tel" name="contact" placeholder="Contact Number" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Create Account</button>
+    </form>
+
+    <p class="toggle-text">
+        <span id="toggleMessage">Don't have an account?</span>
+        <span class="toggle-link" onclick="toggleForm()">Create Account</span>
+    </p>
+</div>
+
+<script>
+function toggleForm() {
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const toggleMessage = document.getElementById("toggleMessage");
+    const toggleLink = document.querySelector(".toggle-link");
+
+    loginForm.classList.toggle("hidden");
+    registerForm.classList.toggle("hidden");
+
+    if (loginForm.classList.contains("hidden")) {
+        toggleMessage.textContent = "Already have an account?";
+        toggleLink.textContent = "Login";
+    } else {
+        toggleMessage.textContent = "Don't have an account?";
+        toggleLink.textContent = "Create Account";
+    }
+}
+</script>
+
+</body>
+</html>

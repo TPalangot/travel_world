@@ -1,0 +1,313 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#121212;
+    color:white;
+    padding:20px;
+}
+
+/* ================= HEADINGS ================= */
+
+h1{
+    text-align:center;
+    color:#e63946;
+    margin-bottom:25px;
+}
+
+h2{
+    margin-top:40px;
+    margin-bottom:10px;
+    color:#e63946;
+}
+
+h3{
+    margin-top:20px;
+    margin-bottom:15px;
+    color:#e63946;
+}
+
+/* ================= FILTER SECTION ================= */
+
+.category-filter{
+    background:#1c1c1c;
+    padding:20px;
+    border:1px solid #e63946;
+    border-radius:10px;
+    margin-bottom:30px;
+}
+
+.category-filter input,
+.category-filter select{
+    padding:10px;
+    border-radius:5px;
+    border:none;
+    margin:8px 10px 8px 0;
+}
+
+.category-filter input{
+    width:250px;
+}
+
+.category-filter select{
+    background:#2a2a2a;
+    color:white;
+}
+
+/* ================= CHECKBOX GRID ================= */
+
+.checkbox-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(170px,1fr));
+    gap:10px;
+    margin-top:15px;
+    margin-bottom:15px;
+}
+
+.checkbox-grid label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#2a2a2a;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    transition:0.3s;
+}
+
+.checkbox-grid label:hover{
+    background:#3a3a3a;
+}
+
+.checkbox-grid input{
+    width:16px;
+    height:16px;
+    accent-color:#e63946;
+    cursor:pointer;
+}
+
+/* ================= BUTTONS ================= */
+
+button{
+    padding:10px 15px;
+    border:none;
+    background:#e63946;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    opacity:0.85;
+    transform:translateY(-2px);
+}
+
+/* Delete Button */
+
+.delete-btn{
+    background:#ff4d4d;
+    padding:5px 10px;
+    font-size:12px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.delete-btn:hover{
+    background:#cc0000;
+}
+
+/* ================= RESULTS & ITINERARY ================= */
+
+.results, 
+.itinerary{
+    margin-top:20px;
+}
+
+/* ================= PLACE CARD ================= */
+
+.place-card{
+    background:#1c1c1c;
+    padding:15px;
+    margin:12px 0;
+    border:1px solid #e63946;
+    border-radius:10px;
+    cursor:grab;
+    transition:0.3s;
+}
+
+.place-card:hover{
+    box-shadow:0 0 15px rgba(230,57,70,0.5);
+    transform:translateY(-3px);
+}
+
+/* Two-column layout */
+
+.place-content{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.place-details{
+    flex:2;
+}
+
+.place-details p{
+    margin-top:6px;
+}
+
+.place-image{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* Image Styling */
+
+.place-image img{
+    width:100%;
+    max-width:230px;
+    height:160px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid #e63946;
+    transition:0.3s;
+}
+
+.place-image img:hover{
+    transform:scale(1.05);
+}
+
+/* Notes Textarea */
+
+.place-card textarea{
+    width:100%;
+    margin-top:12px;
+    border-radius:6px;
+    padding:8px;
+    background:#2a2a2a;
+    border:none;
+    color:white;
+    resize:vertical;
+}
+
+/* ================= ITINERARY AREA ================= */
+
+.itinerary{
+    min-height:200px;
+    border:2px dashed #e63946;
+    padding:20px;
+    border-radius:10px;
+    transition:0.3s;
+}
+
+.drag-over{
+    background:#2a2a2a;
+    border-color:white;
+}
+
+/* ================= GOOGLE MAP LINK ================= */
+
+.map-link{
+    display:inline-block;
+    margin-top:6px;
+    color:#e63946;
+    text-decoration:none;
+    font-weight:500;
+}
+
+.map-link:hover{
+    text-decoration:underline;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    .category-filter input,
+    .category-filter select{
+        width:100%;
+        margin-bottom:10px;
+    }
+
+    .checkbox-grid{
+        grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
+    }
+
+    .place-content{
+        flex-direction:column;
+    }
+
+    .place-image img{
+        max-width:100%;
+        height:200px;
+    }
+}
+
+.notes-section{
+    margin-top:15px;
+}
+
+.notes-section label{
+    display:block;
+    margin-top:10px;
+    font-weight:600;
+    font-size:14px;
+    color:#e63946;
+}
+
+.notes-section textarea,
+.notes-section input{
+    width:100%;
+    margin-top:5px;
+    border-radius:6px;
+    padding:8px;
+    background:#2a2a2a;
+    border:none;
+    color:white;
+    resize:vertical;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #1c1c1c; /* Slightly lighter black */
+    padding: 15px 30px;
+    border-bottom: 2px solid #e63946; /* Red underline */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+    gap: 40px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.navbar ul li a:hover {
+    color: #e63946; /* Red highlight on hover */
+}
+
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}

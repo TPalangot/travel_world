@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ destination.name }} - Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='places.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('stateorcountry', type=destination.type) }}">Back to Destinations</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="state-container">
+
+    <section class="state-header">
+        <h2>{{ destination.name }}</h2>        <script>
+        function openModal() {
+            document.getElementById("placeModal").style.display = "flex";
+        }
+        
+        function closeModal() {
+            document.getElementById("placeModal").style.display = "none";
+        }
+        
+        function openEditModal(placeId, event) {
+            if(event) event.preventDefault();
+            fetch(`/get_place/${placeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("edit_place_id").value = data.id;
+                    document.getElementById("edit_name").value = data.name;
+                    document.getElementById("edit_district").value = data.district;
+                    document.getElementById("edit_description").value = data.description;
+                    document.getElementById("edit_map_link").value = data.map_link || "";
+                    document.getElementById("edit_things_to_do").value = data.things_to_do || "";
+                    document.getElementById("edit_best_from").value = data.best_time_from;
+                    document.getElementById("edit_best_to").value = data.best_time_to;
+                    document.getElementById("editPlaceForm").action = `/edit_place/${data.id}`;
+                    document.getElementById("editPlaceModal").style.display = "flex";
+                });
+        }
+        
+        function closeEditModal() {
+            document.getElementById("editPlaceModal").style.display = "none";
+        }
+        
+        // Combined modal close handler
+        window.onclick = function(event) {
+            const placeModal = document.getElementById("placeModal");
+            const editPlaceModal = document.getElementById("editPlaceModal");
+            if (event.target === placeModal) {
+                closeModal();
+            }
+            if (event.target === editPlaceModal) {
+                closeEditModal();
+            }
+        }
+        </script>
+        <p>{{ destination.description }}</p>
+        <span>Total Places: <strong>{{ places|length }}</strong></span><br>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="categories">
+        <h3>Explore & Filter</h3>
+
+        <form class="category-filter" method="GET" action="{{ url_for('places', destination_id=destination.id) }}">
+            <input type="text" name="search" id="liveSearch" placeholder="Search place..." value="{{ request.args.get('search', '') }}">
+
+            <select name="month">
+                <option value="">All Months</option>
+                <option value="January" {% if request.args.get('month') == 'January' %}selected{% endif %}>January</option>
+                <option value="February" {% if request.args.get('month') == 'February' %}selected{% endif %}>February</option>
+                <option value="March" {% if request.args.get('month') == 'March' %}selected{% endif %}>March</option>
+                <option value="April" {% if request.args.get('month') == 'April' %}selected{% endif %}>April</option>
+                <option value="May" {% if request.args.get('month') == 'May' %}selected{% endif %}>May</option>
+                <option value="June" {% if request.args.get('month') == 'June' %}selected{% endif %}>June</option>
+                <option value="July" {% if request.args.get('month') == 'July' %}selected{% endif %}>July</option>
+                <option value="August" {% if request.args.get('month') == 'August' %}selected{% endif %}>August</option>
+                <option value="September" {% if request.args.get('month') == 'September' %}selected{% endif %}>September</option>
+                <option value="October" {% if request.args.get('month') == 'October' %}selected{% endif %}>October</option>
+                <option value="November" {% if request.args.get('month') == 'November' %}selected{% endif %}>November</option>
+                <option value="December" {% if request.args.get('month') == 'December' %}selected{% endif %}>December</option>
+            </select>
+
+            <button type="submit" class="apply-btn">Apply Filters</button>
+
+            <div class="checkbox-grid">
+                <label><input type="checkbox" name="activity" value="Trekking" {% if 'Trekking' in request.args.getlist('activity') %}checked{% endif %}> Trekking</label>
+                <label><input type="checkbox" name="activity" value="Waterfalls" {% if 'Waterfalls' in request.args.getlist('activity') %}checked{% endif %}> Waterfalls</label>
+                <label><input type="checkbox" name="activity" value="Mountain" {% if 'Mountain' in request.args.getlist('activity') %}checked{% endif %}> Mountain</label>
+                <label><input type="checkbox" name="activity" value="Beaches" {% if 'Beaches' in request.args.getlist('activity') %}checked{% endif %}> Beaches</label>
+                <label><input type="checkbox" name="activity" value="Temples" {% if 'Temples' in request.args.getlist('activity') %}checked{% endif %}> Temples</label>
+                <label><input type="checkbox" name="activity" value="National Park" {% if 'National Park' in request.args.getlist('activity') %}checked{% endif %}> National Park</label>
+                <label><input type="checkbox" name="activity" value="Road Trip" {% if 'Road Trip' in request.args.getlist('activity') %}checked{% endif %}> Road Trip</label>
+                <label><input type="checkbox" name="activity" value="Historical Sites" {% if 'Historical Sites' in request.args.getlist('activity') %}checked{% endif %}> Historical Sites</label>
+                <label><input type="checkbox" name="activity" value="Culture" {% if 'Culture' in request.args.getlist('activity') %}checked{% endif %}> Culture</label>
+                <label><input type="checkbox" name="activity" value="City" {% if 'City' in request.args.getlist('activity') %}checked{% endif %}> City</label>
+                <label><input type="checkbox" name="activity" value="Others" {% if 'Others' in request.args.getlist('activity') %}checked{% endif %}> Others</label>
+            </div>
+        </form>
+    </section>
+
+    <!-- Places Section -->
+    <section class="all-places">
+        <div class="places-header">
+            <h3>All Places</h3>
+            {% if role == 'admin' %}
+            <button class="add-btn" onclick="openModal()">+ Add Place</button>
+            {% endif %}
+        </div>
+
+        {% if places %}
+        <div class="places-grid" id="placesGrid">
+            {% for place in places %}
+            <div class="place-card" data-name="{{ place.name|lower }}" data-district="{{ place.district|lower }}">
+                {% if place.image %}
+                <img src="{{ url_for('static', filename='uploads/' + place.image) }}" alt="{{ place.name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/national.avif') }}" alt="No image">
+                {% endif %}
+                <div class="place-content">
+                    <h4>
+                        {{ place.name }}
+                        {% if place.id in completed_place_ids %}
+                        <span style="vertical-align: middle; margin-left: 8px;">
+                            <span style="display: inline-block; width: 10px; height: 10px; background: #27ae60; border-radius: 50%; margin-right: 4px;"></span>
+                            <span style="color: #27ae60; font-size: 0.95em;">Completed</span>
+                        </span>
+                        {% endif %}
+                    </h4>
+                    <p>{{ place.description }}</p>
+                    <span><strong>District:</strong> {{ place.district }}</span><br>
+                    <span><strong>Things To Do:</strong> {{ place.things_to_do }}</span><br>
+                    <span><strong>Best Time:</strong> {{ place.best_time_from }} – {{ place.best_time_to }}</span>
+                    <div class="place-actions">
+                        {% if place.map_link %}
+                        <a href="{{ place.map_link }}" target="_blank">📍 Map</a>
+                        {% endif %}
+                        {% if role == 'admin' %}
+                        <a href="{{ url_for('delete_place', place_id=place.id, destination_id=destination.id) }}" class="delete-btn" onclick="return confirm('Are you sure?')">🗑 Delete</a>
+                        {% endif %}
+                        {% if role == 'admin' %}
+                        <a href="#" class="edit-btn" onclick="openEditModal({{ place.id }}, event)">✏️ Edit</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #ccc; padding: 40px; font-size: 1.1rem;">No places found for this destination. {% if role == 'admin' %}Click "Add Place" to create one!{% endif %}</p>
+        {% endif %}
+    </section>
+
+</div>
+
+<!-- Modal for Adding Place (Admin Only) -->
+{% if role == 'admin' %}
+<div class="modal" id="placeModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+
+        <h3>Add New Place</h3>
+
+        <form method="POST" action="{{ url_for('add_place', destination_id=destination.id) }}" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Place Name" required>
+            <input type="text" name="district" placeholder="District" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <input type="url" name="map_link" placeholder="Google Maps Link">
+            <input type="file" name="image" required>
+
+            <label><strong>Things To Do</strong></label>
+            <div class="checkbox-grid">
+                <label><input type="checkbox" name="things_to_do" value="Trekking"> Trekking</label>
+                <label><input type="checkbox" name="things_to_do" value="Waterfalls"> Waterfalls</label>
+                <label><input type="checkbox" name="things_to_do" value="Mountain"> Mountain</label>
+                <label><input type="checkbox" name="things_to_do" value="Beaches"> Beaches</label>
+                <label><input type="checkbox" name="things_to_do" value="Temples"> Temples</label>
+                <label><input type="checkbox" name="things_to_do" value="National Park"> National Park</label>
+                <label><input type="checkbox" name="things_to_do" value="Road Trip"> Road Trip</label>
+                <label><input type="checkbox" name="things_to_do" value="Historical Sites"> Historical Sites</label>
+                <label><input type="checkbox" name="things_to_do" value="Culture"> Culture</label>
+                <label><input type="checkbox" name="things_to_do" value="City"> City</label>
+                <label><input type="checkbox" name="things_to_do" value="Others"> Others</label>
+            </div>
+
+            <label><strong>Best Time To Visit</strong></label>
+            <div class="months">
+                <select name="best_from" required>
+                    <option value="">From</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+
+                <select name="best_to" required>
+                    <option value="">To</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+            </div>
+
+            <button type="submit">Add Place</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal for Editing Place (Admin Only) -->
+{% if role == 'admin' %}
+<div class="modal" id="editPlaceModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeEditModal()">&times;</span>
+        <h3>Edit Place</h3>
+        <form id="editPlaceForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="place_id" id="edit_place_id">
+            <input type="text" name="name" id="edit_name" placeholder="Place Name" required>
+            <input type="text" name="district" id="edit_district" placeholder="District" required>
+            <textarea name="description" id="edit_description" placeholder="Description" required></textarea>
+            <input type="url" name="map_link" id="edit_map_link" placeholder="Google Maps Link">
+            <input type="file" name="image">
+            <label><strong>Things To Do</strong></label>
+            <input type="text" name="things_to_do" id="edit_things_to_do" placeholder="Comma separated activities">
+            <label><strong>Best Time To Visit</strong></label>
+            <div class="months">
+                <select name="best_from" id="edit_best_from" required>
+                    <option value="">From</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+                <select name="best_to" id="edit_best_to" required>
+                    <option value="">To</option>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+            </div>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function openModal() {
+    document.getElementById("placeModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("placeModal").style.display = "none";
+}
+
+function openEditModal(placeId, event) {
+    if(event) event.preventDefault();
+    fetch(`/get_place/${placeId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("edit_place_id").value = data.id;
+            document.getElementById("edit_name").value = data.name;
+            document.getElementById("edit_district").value = data.district;
+            document.getElementById("edit_description").value = data.description;
+            document.getElementById("edit_map_link").value = data.map_link || "";
+            document.getElementById("edit_things_to_do").value = data.things_to_do || "";
+            document.getElementById("edit_best_from").value = data.best_time_from;
+            document.getElementById("edit_best_to").value = data.best_time_to;
+            document.getElementById("editPlaceForm").action = `/edit_place/${data.id}`;
+            document.getElementById("editPlaceModal").style.display = "flex";
+        });
+}
+
+function closeEditModal() {
+    document.getElementById("editPlaceModal").style.display = "none";
+}
+
+// Combined modal close handler
+window.onclick = function(event) {
+    const placeModal = document.getElementById("placeModal");
+    const editPlaceModal = document.getElementById("editPlaceModal");
+    if (event.target === placeModal) {
+        closeModal();
+    }
+    if (event.target === editPlaceModal) {
+        closeEditModal();
+    }
+}
+</script>
+
+<script>
+document.getElementById('liveSearch').addEventListener('input', function() {
+    const search = this.value.toLowerCase();
+    const cards = document.querySelectorAll('#placesGrid .place-card');
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        const district = card.getAttribute('data-district') || '';
+        if (
+            name.includes(search) ||
+            district.includes(search)
+        ) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

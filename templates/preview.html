@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='preview.css') }}">
+</head>
+<body>
+
+<h1>Trip Preview</h1>
+
+<div class="plan-details">
+    <label for="planTitle"><b>Plan Title:</b></label>
+    <input type="text" id="planTitle" placeholder="Enter your plan title">
+
+    <label for="estimatedBudget"><b>Estimated Budget:</b></label>
+    <input type="text" id="estimatedBudget" placeholder="Enter estimated budget">
+</div>
+
+<div id="previewContainer"></div>
+
+<div class="buttons-container">
+    <button id="editBtn">Edit Itinerary</button>
+    <button id="submitBtn">Submit Plan</button>
+</div>
+
+<script>
+// Load itinerary from localStorage
+const itineraryData = JSON.parse(localStorage.getItem("multiDayItinerary") || "[]");
+const tripType = localStorage.getItem("tripType") || "national"; // Get trip type from localStorage
+const tripTitle = localStorage.getItem("tripTitle") || ""; // Get trip title if saved
+const estimatedBudget = localStorage.getItem("estimatedBudget") || ""; // Get budget if saved
+const previewContainer = document.getElementById("previewContainer");
+
+// Auto-populate title if it exists
+if(tripTitle) {
+    document.getElementById("planTitle").value = tripTitle;
+}
+
+// Auto-populate budget if it exists
+if(estimatedBudget) {
+    document.getElementById("estimatedBudget").value = estimatedBudget;
+}
+
+itineraryData.forEach(dayData => {
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "day-preview";
+    dayDiv.innerHTML = `<h2>Day ${dayData.day}</h2>`;
+
+    dayData.places.forEach((place, placeIndex) => {
+        const placeDiv = document.createElement("div");
+        placeDiv.className = "place-preview";
+
+        // Handle both camelCase (new trips) and snake_case (saved trips from database)
+        const name = place.name || place.place_name || "Unknown";
+        const about = place.about || "";
+        const thingsToDo = place.thingsToDo || place.things_to_do || "N/A";
+        const food = place.food || "N/A";
+        const thingsToBuy = place.thingsToBuy || place.things_to_buy || "N/A";
+        const timeToSpend = place.timeToSpend || place.time_to_spend || "N/A";
+        const distanceToNext = place.distanceToNext || place.distance_to_next || "";
+        const timeToNext = place.timeToNext || place.time_to_next || "";
+        const notes = place.notes || "";
+
+        placeDiv.innerHTML = `
+            <div class="place-header">
+                <strong>${name}</strong>
+            </div>
+            <p><b>About:</b> ${about || "No description"}</p>
+            <p><b>Things to do:</b> ${thingsToDo}</p>
+            <p><b>Food to eat:</b> ${food}</p>
+            <p><b>Things to buy:</b> ${thingsToBuy}</p>
+            <p><b>Time to spend:</b> ${timeToSpend}</p>
+            ${distanceToNext ? `<p><b>Distance to next place:</b> ${distanceToNext}</p>` : ""}
+            ${timeToNext ? `<p><b>Time to next place:</b> ${timeToNext}</p>` : ""}
+            ${notes ? `<p><b>Notes:</b> ${notes}</p>` : ""}
+        `;
+
+        dayDiv.appendChild(placeDiv);
+    });
+
+    previewContainer.appendChild(dayDiv);
+});
+
+// Edit Button
+document.getElementById("editBtn").addEventListener("click", ()=>{
+    window.history.back(); // Go back to planning page for editing
+});
+
+// Submit Button
+document.getElementById("submitBtn").addEventListener("click", async ()=>{
+    const planTitle = document.getElementById("planTitle").value.trim();
+    const estimatedBudget = document.getElementById("estimatedBudget").value.trim();
+
+    if(!planTitle){
+        alert("Please enter a plan title before submitting.");
+        return;
+    }
+
+    const tripData = {
+        trip_name: planTitle,
+        trip_type: tripType,
+        estimated_budget: estimatedBudget,
+        days: itineraryData
+    };
+
+    try {
+        const response = await fetch("{{ url_for('save_trip') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tripData)
+        });
+
+        const result = await response.json();
+
+        if(result.success){
+            alert("Trip saved successfully!");
+            localStorage.removeItem("multiDayItinerary"); // Clear saved data
+            localStorage.removeItem("tripType"); // Clear trip type
+            localStorage.removeItem("tripTitle"); // Clear trip title
+            localStorage.removeItem("estimatedBudget"); // Clear budget
+            window.location.href = "{{ url_for('dashboard') }}"; // Redirect to dashboard
+        } else {
+            alert("Failed to save trip. " + result.message);
+        }
+    } catch(error){
+        console.error(error);
+        alert("An error occurred while saving the trip.");
+    }
+});
+</script>
+
+</body>
+</html>

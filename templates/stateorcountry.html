@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if type == 'national' %}States{% else %}Countries{% endif %} - Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='national.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="state-container">
+
+    <!-- Header -->
+    <section class="state-header">
+        <h2>{% if type == 'national' %}Explore Indian States{% else %}Explore Countries{% endif %}</h2>
+        <p>Choose a destination to explore places</p>
+
+        <!-- Search Bar -->
+        <form method="GET" action="{{ url_for('stateorcountry') }}" class="search-form">
+            <input type="hidden" name="type" value="{{ type }}">
+            <input type="text" name="search" id="liveSearch" placeholder="Search destination..." value="{{ request.args.get('search', '') }}">
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    <!-- Destinations Grid -->
+    <section class="destinations-grid">
+        <div class="destinations" id="destinationsGrid">
+            {% if destinations %}
+                {% for destination in destinations %}
+                <div class="destination-card" data-name="{{ destination.name|lower }}">
+                    {% if destination.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + destination.image) }}" alt="{{ destination.name }}">
+                    {% endif %}
+                    <div class="destination-content">
+                        <h3>{{ destination.name }}</h3>
+                        <p>{{ destination.description }}</p>
+                        <div class="destination-actions">
+                            <a href="{{ url_for('places', destination_id=destination.id) }}" class="details-btn">View Places</a>
+                            {% if role == 'admin' %}
+                            <a href="{{ url_for('delete_destination', id=destination.id) }}" class="delete-btn">Delete</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p class="no-destinations-msg" style="color: #999; display: {% if destinations %}none{% else %}block{% endif %};">
+                No destinations found. Try a different search.
+            </p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Add Destination Button (Admin Only) -->
+    {% if role == 'admin' %}
+    <section class="add-destination">
+        <button class="add-btn" onclick="openModal()">+ Add Destination</button>
+    </section>
+
+    <!-- Modal for Adding Destination -->
+    <div class="modal" id="destinationModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+
+            <h3>Add New Destination</h3>
+
+            <form method="POST" action="{{ url_for('create_destination', type=type) }}" enctype="multipart/form-data">
+                <input type="text" name="name" placeholder="Destination Name" required>
+                <textarea name="description" placeholder="Description" required></textarea>
+                <input type="file" name="image" required>
+                <button type="submit">Add Destination</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+function openModal() {
+    document.getElementById("destinationModal").style.display = "flex";
+}
+function closeModal() {
+    document.getElementById("destinationModal").style.display = "none";
+}
+</script>
+
+<script>
+document.getElementById('liveSearch').addEventListener('input', function() {
+    const search = this.value.toLowerCase();
+    const cards = document.querySelectorAll('#destinationsGrid .destination-card');
+    let anyVisible = false;
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        if (name.includes(search)) {
+            card.style.display = '';
+            anyVisible = true;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    // Show/hide "No destinations found" message
+    const noResultMsg = document.querySelector('.no-destinations-msg');
+    if (noResultMsg) {
+        noResultMsg.style.display = anyVisible ? 'none' : '';
+    }
+});
+</script>
+
+</body>
+</html>

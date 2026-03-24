@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Experience Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles/myexperience.css">
+</head>
+<body>
+
+<h1>Trip Experience Preview</h1>
+
+<div id="previewContainer" class="experience-form"></div>
+
+<button onclick="goBack()" style="margin-top:15px;">Back to Edit</button>
+
+<script>
+// Load selected trip from localStorage
+const trip = JSON.parse(localStorage.getItem("selectedTrip") || "null");
+const container = document.getElementById("previewContainer");
+
+if(!trip){
+    container.innerHTML = "<p>No trip data available.</p>";
+} else {
+    // Basic trip info
+    container.innerHTML = `
+        <label><b>Trip Title:</b></label>
+        <p>${trip.title}</p>
+
+        <label><b>Date Completed:</b></label>
+        <p>${trip.startDate || 'N/A'} - ${trip.endDate || 'N/A'}</p>
+
+        <label><b>Budget:</b></label>
+        <p>${trip.budget || 'N/A'}</p>
+
+        <label><b>Highlights:</b></label>
+        <p>${trip.highlights || 'N/A'}</p>
+
+        <label><b>Photo Gallery / Links:</b></label>
+        <p>${trip.photos || 'N/A'}</p>
+    `;
+
+    // Locations & experiences
+    if(trip.places && trip.places.length > 0){
+        container.innerHTML += `<h3>Places & Experiences</h3>`;
+        trip.places.forEach((place, idx)=>{
+            container.innerHTML += `
+                <div class="place-item">
+                    <p><b>Place ${idx+1}:</b> ${place.name || 'N/A'}</p>
+                    <p><b>Description:</b> ${place.description || 'N/A'}</p>
+                    <p><b>Photo / Link:</b> ${place.photo || 'N/A'}</p>
+                </div>
+            `;
+        });
+    }
+
+    // People met during trip
+    if(trip.people && trip.people.length > 0){
+        container.innerHTML += `<h3>People Met</h3>`;
+        trip.people.forEach((person, idx)=>{
+            container.innerHTML += `
+                <div class="person-item">
+                    <p><b>Name:</b> ${person.name || 'N/A'}</p>
+                    <p><b>Contact:</b> ${person.contact || 'N/A'}</p>
+                    <p><b>Email:</b> ${person.email || 'N/A'}</p>
+                    <p><b>Photo:</b> ${person.photo || 'N/A'}</p>
+                    <p><b>Description:</b> ${person.description || 'N/A'}</p>
+                </div>
+            `;
+        });
+    }
+}
+
+// Back button
+function goBack(){
+    window.location.href = "myexperience.html";
+}
+</script>
+
+</body>
+</html>

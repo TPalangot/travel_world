@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gallery - Travel World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/gallery.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+            <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+            <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="top-bar">
+            <input type="text" placeholder="Search trips..." id="searchInput" class="search-bar">
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid" id="galleryGrid">
+            <!-- Trip folders will appear here -->
+        </div>
+    </div>
+
+    <script>
+        const galleryGrid = document.getElementById('galleryGrid');
+        const searchInput = document.getElementById('searchInput');
+        let trips = [];
+
+        // Render trips with place names
+        function renderTrips(filter='') {
+            galleryGrid.innerHTML = '';
+            trips
+                .filter(trip => {
+                    const search = filter.toLowerCase();
+                    const titleMatch = trip.title && trip.title.toLowerCase().includes(search);
+                    const placeMatch = trip.places && trip.places.some(
+                        p => p.name && p.name.toLowerCase().includes(search)
+                    );
+                    return titleMatch || placeMatch;
+                })
+                .forEach(trip => {
+                    // Get place names for this trip
+                    let placesHtml = '';
+                    if (trip.places && trip.places.length > 0) {
+                        placesHtml = `<div class="trip-places"><strong>Places:</strong> ` +
+                            trip.places.map(p => `<span>${p.name}</span>`).join(', ') +
+                            `</div>`;
+                    }
+                    const card = document.createElement('div');
+                    card.className = 'trip-card';
+                    card.innerHTML = `
+                        <h3>${trip.title}</h3>
+                        <p><strong>Date:</strong> ${
+                            trip.visit_date
+                                ? (new Date(trip.visit_date)).toISOString().split('T')[0]
+                                : ''
+                        }</p>
+                        ${placesHtml}
+                        <p><a href="${trip.google_drive_link}" target="_blank">Google Drive Folder</a></p>
+                    `;
+                    galleryGrid.appendChild(card);
+                });
+        }
+
+        // Search trips
+        searchInput.addEventListener('input', () => {
+            renderTrips(searchInput.value);
+        });
+
+        // Fetch trips from server
+        function fetchTrips() {
+            fetch("{{ url_for('get_completed_trips') }}")
+                .then(res => res.json())
+                .then(data => {
+                    trips = data.trips || [];
+                    renderTrips();
+                });
+        }
+
+        // Initial fetch
+        fetchTrips();
+    </script>
+</body>
+</html>

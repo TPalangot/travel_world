@@ -1,0 +1,151 @@
+/* ================= Body & Font ================= */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 20px;
+    background-color: #121212;
+    color: #fff;
+}
+
+/* ================= Heading ================= */
+h1 {
+    text-align: center;
+    color: #ff4444;
+    margin-bottom: 25px;
+}
+
+/* ================= Form Container ================= */
+.experience-form {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #1e1e1e;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(255,0,0,0.2);
+}
+
+/* ================= Labels & Inputs ================= */
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #ff4444;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 5px;
+    border: 1px solid #ff4444;
+    background-color: #2a2a2a;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ================= Buttons ================= */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+#saveTripBtn {
+    background-color: #ff4444;
+    color: #fff;
+}
+
+#saveTripBtn:hover {
+    background-color: #cc0000;
+}
+
+#cancelBtn {
+    background-color: #444;
+    color: #fff;
+    margin-left: 10px;
+}
+
+#cancelBtn:hover {
+    background-color: #222;
+}
+
+#addPlaceBtn,
+#addPersonBtn {
+    background-color: #ff4444;
+    color: #fff;
+    margin-top: 5px;
+}
+
+#addPlaceBtn:hover,
+#addPersonBtn:hover {
+    background-color: #cc0000;
+}
+
+/* ================= Place & Person Containers ================= */
+.place-item, .person-item {
+    border: 1px solid #ff4444;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #2a2a2a;
+    position: relative;
+}
+
+.place-item hr,
+.person-item hr {
+    border: 0.5px solid #ff4444;
+    margin-top: 10px;
+}
+
+.removePlaceBtn,
+.removePersonBtn {
+    background-color: #222;
+    color: #ff4444;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 12px;
+    padding: 5px 8px;
+}
+
+.removePlaceBtn:hover,
+.removePersonBtn:hover {
+    background-color: #ff4444;
+    color: #fff;
+}
+
+/* ================= Section Titles ================= */
+h3 {
+    color: #ff4444;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ff4444;
+    padding-bottom: 5px;
+}
+
+/* ================= Flex for Dates ================= */
+.experience-form div[style*="display:flex"] {
+    flex-wrap: wrap;
+}
+
+.experience-form div[style*="display:flex"] input[type="date"] {
+    flex: 1;
+}
+
+/* ================= Responsive ================= */
+@media (max-width: 600px) {
+    .experience-form div[style*="display:flex"] {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Completed Trips</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='completed_trip.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('stateorcountry') }}">Discover Destinations</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <h1>My Completed Trips</h1>
+
+    <div class="top-buttons">
+        <button class="add-btn" onclick="openAddForm()">+ Add Completed Trip</button>
+        <button class="back-btn" onclick="goBack()">← Back</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchTrip" oninput="liveSearchTrips()" placeholder="Search...">
+        <button onclick="searchTrips()">Search</button>
+    </div>
+
+    <div id="tripsContainer" class="trips-container"></div>
+</div>
+
+<!-- Add Trip Form Modal -->
+<div id="addTripModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeAddForm()">&times;</span>
+        <h2>Add Completed Trip</h2>
+
+        <form id="tripForm">
+            <!-- Trip Title -->
+            <div class="form-group">
+                <label>Trip Title *</label>
+                <input type="text" id="tripTitle" required>
+            </div>
+
+            <!-- Trip Cover Image -->
+            <div class="form-group">
+                <label>Trip Cover Image</label>
+                <input type="file" id="titleImage" accept="image/*">
+                <small>Upload a cover photo for your trip (optional)</small>
+            </div>
+
+            <!-- Visit Date -->
+            <div class="form-group">
+                <label>Date of Visit *</label>
+                <input type="date" id="visitDate" required>
+            </div>
+
+            <!-- Budget -->
+            <div class="form-group">
+                <label>Budget</label>
+                <input type="text" id="budget" placeholder="e.g., ₹50,000">
+            </div>
+
+            <!-- Google Drive Link -->
+            <div class="form-group">
+                <label>Google Drive Photo Link</label>
+                <input type="url" id="googleDriveLink" placeholder="https://drive.google.com/...">
+                <small>Share the Google Drive link where you stored your trip photos</small>
+            </div>
+
+            <!-- Experience -->
+            <div class="form-group">
+                <label>Experience</label>
+                <textarea id="experience" rows="4" placeholder="Describe your experience and memories from this trip..."></textarea>
+            </div>
+
+            <!-- Places Visited -->
+            <div class="form-group">
+                <label>Places Visited *</label>
+                <div id="placesContainer">
+                    <select class="place-select" required>
+                        <option value="">-- Select a place --</option>
+                        {% for place in places %}
+                        <option value="{{ place.id }}">{{ place.name }} ({{ place.destination_name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="button" class="add-more-btn" onclick="addPlaceSelect()">+ Add More Place</button>
+            </div>
+
+            <!-- People Met -->
+            <div class="form-group">
+                <label>People Met</label>
+                <div id="peopleContainer">
+                    <div class="person-input-group">
+                        <input type="text" class="person-name" placeholder="Name">
+                        <input type="text" class="person-contact" placeholder="Contact (Phone)">
+                        <input type="email" class="person-email" placeholder="Email (Optional)">
+                        <input type="file" class="person-image" accept="image/*" placeholder="Photo (Optional)">
+                    </div>
+                </div>
+                <button type="button" class="add-more-btn" onclick="addPersonInput()">+ Add More Person</button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">Save Trip</button>
+        </form>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div id="imageModal" class="image-modal" style="display:none;">
+    <span class="close-image-modal" onclick="closeImageModal()">&times;</span>
+    <img class="image-modal-content" id="modalImg" src="" alt="Person Photo">
+</div>
+
+<script>
+// ================= LOAD COMPLETED TRIPS =================
+function loadTrips() {
+    fetch("{{ url_for('get_completed_trips') }}")
+        .then(res => res.json())
+        .then(data => {
+            window.allTrips = data.trips || [];
+            displayTrips(window.allTrips);
+        })
+        .catch(err => console.error("Error loading trips:", err));
+}
+
+// ================= DISPLAY TRIPS =================
+function displayTrips(trips) {
+    const container = document.getElementById("tripsContainer");
+    container.innerHTML = "";
+
+    if (trips.length === 0) {
+        container.innerHTML = "<p class='no-trips'>No completed trips yet. Start by adding one!</p>";
+        return;
+    }
+
+    trips.forEach((trip, idx) => {
+        const tripDiv = document.createElement("div");
+        tripDiv.className = "trip-card";
+        tripDiv.innerHTML = `
+            <div class="trip-card-header">
+                ${trip.title_image ? `<img src="{{ url_for('static', filename='uploads/') }}${trip.title_image}" alt="${trip.title}" class="trip-cover-image">` : ""}
+                <div class="trip-card-title-section">
+                    <h3 class="trip-title">${trip.title}</h3>
+                    <span class="trip-date">${trip.visit_date ? (new Date(trip.visit_date)).toLocaleDateString('en-GB', {year:'numeric', month:'short', day:'numeric'}) : "N/A"}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteTrip(${trip.id})" title="Delete Trip">🗑</button>
+            </div>
+            <div class="trip-card-body">
+                <div class="trip-info">
+                    <p><b>Budget:</b> ${trip.budget || "N/A"}</p>
+                    ${trip.google_drive_link ? `<p><b>📸 Photos:</b> <a href="${trip.google_drive_link}" target="_blank" class="drive-link">View on Google Drive</a></p>` : ""}
+                    <p><b>Experience:</b> ${trip.description || "No experience recorded"}</p>
+                </div>
+                <div class="trip-places">
+                    <b>Places Visited:</b>
+                    <ul>
+                        ${trip.places && trip.places.length > 0 
+                            ? trip.places.map(place => `<li>${place.name} <span class="destination-name">(${place.destination_name})</span></li>`).join("")
+                            : "<li>No places recorded</li>"
+                        }
+                    </ul>
+                </div>
+                <div class="trip-people">
+                    <b>People Met:</b>
+                    <ul>
+                        ${trip.people && trip.people.length > 0
+                            ? trip.people.map(person => `
+                                <li>
+                                    <div class="person-details">
+                                        ${person.image ? `<img src="{{ url_for('static', filename='uploads/') }}${person.image}" alt="${person.name}" class="person-photo" style="cursor:pointer;" onclick="enlargeImage(this.src)">` : ""}
+                                        <div>
+                                            <strong>${person.name}</strong><br>
+                                            ${person.contact ? `📞 ${person.contact}<br>` : ""}
+                                            ${person.email ? `📧 ${person.email}<br>` : ""}
+                                        </div>
+                                    </div>
+                                </li>
+                            `).join("")
+                            : "<li>No people recorded</li>"
+                        }
+                    </ul>
+                </div>
+            </div>
+        `;
+        container.appendChild(tripDiv);
+    });
+}
+
+// ================= OPEN ADD FORM =================
+function openAddForm() {
+    document.getElementById("addTripModal").style.display = "block";
+}
+
+// ================= CLOSE ADD FORM =================
+function closeAddForm() {
+    document.getElementById("addTripModal").style.display = "none";
+    document.getElementById("tripForm").reset();
+    resetFormInputs();
+}
+
+// ================= RESET FORM INPUTS =================
+function resetFormInputs() {
+    document.getElementById("placesContainer").innerHTML = `
+        <select class="place-select" required>
+            <option value="">-- Select a place --</option>
+            {% for place in places %}
+            <option value="{{ place.id }}">{{ place.name }} ({{ place.destination_name }})</option>
+            {% endfor %}
+        </select>
+    `;
+    document.getElementById("peopleContainer").innerHTML = `
+        <div class="person-input-group">
+            <input type="text" class="person-name" placeholder="Name">
+            <input type="text" class="person-contact" placeholder="Contact (Phone)">
+            <input type="email" class="person-email" placeholder="Email (Optional)">
+            <input type="file" class="person-image" accept="image/*" placeholder="Photo (Optional)">
+        </div>
+    `;
+}
+
+// ================= ADD PLACE SELECT =================
+function addPlaceSelect() {
+    const container = document.getElementById("placesContainer");
+    const select = document.createElement("select");
+    select.className = "place-select";
+    select.innerHTML = `
+        <option value="">-- Select a place --</option>
+        {% for place in places %}
+        <option value="{{ place.id }}">{{ place.name }} ({{ place.destination_name }})</option>
+        {% endfor %}
+    `;
+    container.appendChild(select);
+}
+
+// ================= ADD PERSON INPUT =================
+function addPersonInput() {
+    const container = document.getElementById("peopleContainer");
+    const div = document.createElement("div");
+    div.className = "person-input-group";
+    div.innerHTML = `
+        <input type="text" class="person-name" placeholder="Name">
+        <input type="text" class="person-contact" placeholder="Contact (Phone)">
+        <input type="email" class="person-email" placeholder="Email (Optional)">
+        <input type="file" class="person-image" accept="image/*" placeholder="Photo (Optional)">
+    `;
+    container.appendChild(div);
+}
+
+// ================= SAVE TRIP =================
+document.getElementById("tripForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    // Collect places (IDs from select)
+    const placeSelects = document.querySelectorAll(".place-select");
+    const places = Array.from(placeSelects)
+        .map(select => select.value)
+        .filter(val => val);
+
+    if (places.length === 0) {
+        alert("Please select at least one place!");
+        return;
+    }
+
+    // Create FormData for file uploads
+    const formData = new FormData();
+    formData.append("title", document.getElementById("tripTitle").value);
+    formData.append("visit_date", document.getElementById("visitDate").value);
+    formData.append("budget", document.getElementById("budget").value);
+    formData.append("experience", document.getElementById("experience").value);
+    formData.append("google_drive_link", document.getElementById("googleDriveLink").value);
+
+    // Add title image if provided
+    const titleImageInput = document.getElementById("titleImage");
+    if (titleImageInput.files.length > 0) {
+        formData.append("title_image", titleImageInput.files[0]);
+    }
+
+    // Add places
+    places.forEach(place => {
+        formData.append("places", place);
+    });
+
+    // Collect people
+    const personGroups = document.querySelectorAll(".person-input-group");
+    formData.append("people_count", personGroups.length);
+
+    personGroups.forEach((group, idx) => {
+        const name = group.querySelector(".person-name").value;
+        if (name.trim()) {  // Only add if name exists
+            formData.append(`people_name_${idx}`, name);
+            formData.append(`people_contact_${idx}`, group.querySelector(".person-contact").value);
+            formData.append(`people_email_${idx}`, group.querySelector(".person-email").value);
+            
+            const imageInput = group.querySelector(".person-image");
+            if (imageInput.files.length > 0) {
+                formData.append(`people_image_${idx}`, imageInput.files[0]);
+            }
+        }
+    });
+
+    fetch("{{ url_for('save_completed_trip') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Trip saved successfully!");
+            closeAddForm();
+            loadTrips();
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => console.error("Error saving trip:", err));
+});
+
+// ================= DELETE TRIP =================
+function deleteTrip(tripId) {
+    if (confirm("Are you sure you want to delete this trip?")) {
+        fetch("{{ url_for('delete_completed_trip') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ trip_id: tripId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Trip deleted successfully!");
+                loadTrips();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => console.error("Error deleting trip:", err));
+    }
+}
+
+// ================= SEARCH TRIPS =================
+let debounceTimer;
+
+function liveSearchTrips() {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+        const query = document.getElementById("searchTrip").value.toLowerCase();
+
+        const filtered = window.allTrips.filter(trip => {
+            // Match trip title
+            const titleMatch = trip.title &&
+                trip.title.toLowerCase().includes(query);
+
+            // Match state/destination
+            const stateMatch = trip.places && trip.places.some(
+                place => place.destination_name &&
+                place.destination_name.toLowerCase().includes(query)
+            );
+
+            // ✅ Match place name
+            const placeMatch = trip.places && trip.places.some(
+                place => place.name &&
+                place.name.toLowerCase().includes(query)
+            );
+
+            return titleMatch || stateMatch || placeMatch;
+        });
+
+        displayTrips(filtered);
+    }, 300);
+}
+
+// ================= GO BACK =================
+function goBack() {
+    window.location.href = "{{ url_for('trip_type') }}";
+}
+
+// ================= CLOSE MODAL ON OUTSIDE CLICK =================
+window.onclick = function(event) {
+    const modal = document.getElementById("addTripModal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
+
+// ================= INITIAL LOAD =================
+loadTrips();
+
+// ================= ENLARGE IMAGE =================
+function enlargeImage(src) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    modalImg.src = src;
+    modal.style.display = "flex";
+}
+function closeImageModal() {
+    document.getElementById("imageModal").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>

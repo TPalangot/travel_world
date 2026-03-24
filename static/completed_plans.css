@@ -1,0 +1,85 @@
+/* completed_plans.css - Style for plan_completed.html */
+
+.plan-completed-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.plan-completed-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 18px;
+    color: #2a3d5c;
+}
+
+.completed-trip-card {
+    background: #f7f9fa;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+
+.completed-trip-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1a2b3c;
+    margin-bottom: 8px;
+}
+
+.completed-trip-date {
+    font-size: 1rem;
+    color: #6c7a89;
+    margin-bottom: 6px;
+}
+
+.completed-trip-experience {
+    font-size: 1.05rem;
+    color: #3a4a5c;
+    margin-bottom: 10px;
+}
+
+.completed-trip-places {
+    margin-bottom: 10px;
+}
+
+.completed-trip-places span {
+    display: inline-block;
+    background: #e3eaf2;
+    color: #2a3d5c;
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin: 2px 6px 2px 0;
+    font-size: 0.98rem;
+}
+
+.completed-trip-cover {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.completed-trip-link {
+    display: inline-block;
+    color: #1976d2;
+    text-decoration: underline;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+    .plan-completed-container {
+        padding: 10px;
+    }
+    .completed-trip-card {
+        padding: 10px 8px;
+    }
+    .completed-trip-title {
+        font-size: 1.1rem;
+    }
+}
+

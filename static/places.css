@@ -1,0 +1,390 @@
+/* places.css */
+
+/* General body styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #fff;
+}
+
+/* Navbar */
+/* Navigation Bar */
+.navbar {
+    background-color: #1c1c1c; /* Slightly lighter black */
+    padding: 15px 30px;
+    border-bottom: 2px solid #e63946; /* Red underline */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+    gap: 40px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.navbar ul li a:hover {
+    color: #e63946; /* Red highlight on hover */
+}
+
+
+/* State container */
+.state-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* State header */
+.state-header {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-top: 40px;      /* Increased space above the state name */
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.state-header h2 {
+    color: #e63946;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.state-header p {
+    font-size: 1.1rem;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+/* Categories / Filters */
+.categories {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.categories h3 {
+    color: #e63946;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.category-filter input[type="text"],
+.category-filter select {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 2px solid #e63946;
+    background-color: #121212;
+    color: #fff;
+    flex: 1;
+    min-width: 150px;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.category-filter input[type="text"]:focus,
+.category-filter select:focus {
+    border-color: #f05454;
+    box-shadow: 0 0 10px #e63946;
+}
+
+.category-filter button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    background-color: #e63946;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.category-filter button:hover {
+    background-color: #f05454;
+    transform: translateY(-2px);
+}
+
+/* Checkbox grid styling */
+.checkbox-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.checkbox-grid input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #e63946;
+    cursor: pointer;
+}
+
+/* All places section */
+.all-places {
+    margin-bottom: 30px;
+}
+
+.all-places .places-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.all-places .places-header h3 {
+    margin: 0;
+    color: #e63946;
+    font-size: 1.5rem;
+}
+
+.add-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    background-color: #e63946;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.add-btn:hover {
+    background-color: #f05454;
+    transform: translateY(-2px);
+}
+
+/* Places grid */
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.place-card {
+    background-color: #1c1c1c;
+    border: 2px solid #e63946;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.place-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(230, 57, 70, 0.4);
+}
+
+.place-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.place-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.place-content h4 {
+    margin: 0 0 10px 0;
+    color: #e63946;
+    font-size: 1.3rem;
+}
+
+.place-content p {
+    font-size: 0.95rem;
+    margin: 0 0 15px 0;
+    color: #ccc;
+    flex-grow: 1;
+}
+
+.place-content span {
+    font-size: 0.9rem;
+    display: block;
+    margin: 5px 0;
+    color: #fff;
+}
+
+.place-content span strong {
+    color: #e63946;
+}
+
+.place-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.place-actions a,
+.place-actions button {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    color: #fff;
+}
+
+.place-actions a {
+    background-color: #e63946;
+}
+
+.place-actions a:hover {
+    background-color: #f05454;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background-color: #666;
+}
+
+.delete-btn:hover {
+    background-color: #888;
+    transform: translateY(-2px);
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1c1c1c;
+    border: 2px solid #e63946;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
+    color: #fff;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #e63946;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 12px 0;
+    border: 2px solid #e63946;
+    border-radius: 8px;
+    background-color: #121212;
+    color: #fff;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus,
+.modal-content select:focus {
+    border-color: #f05454;
+    box-shadow: 0 0 10px #e63946;
+}
+
+.modal-content button {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #e63946;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    width: 100%;
+}
+
+.modal-content button:hover {
+    background-color: #f05454;
+    transform: translateY(-2px);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e63946;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-btn:hover {
+    color: #f05454;
+}
+
+/* Months section */
+.months {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.months select {
+    flex: 1;
+    padding: 12px 15px !important;
+    margin: 12px 0 !important;
+}

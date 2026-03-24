@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upcoming Trips</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='upcoming.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('trip_type') }}">Plan New Trip</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<h1>My Upcoming Trips</h1>
+
+<div class="search-container">
+    <input type="text" id="searchPlan" placeholder="Search by Trip Title...">
+    <button type="button" onclick="searchTrips()">Search</button>
+</div>
+
+<div id="tripsContainer"></div>
+
+<script>
+// ================= FETCH TRIPS FROM TEMPLATE DATA =================
+const trips = {{ trips|tojson }};
+
+// ================= DISPLAY ALL TRIPS =================
+function displayTrips(tripsToShow) {
+    const container = document.getElementById("tripsContainer");
+    container.innerHTML = "";
+
+    if(tripsToShow.length === 0){
+        container.innerHTML = "<p style='text-align:center; padding: 40px; color: #999;'>No trips found. <a href='" + "{{ url_for('trip_type') }}" + "'>Plan a new trip</a></p>";
+        return;
+    }
+
+    // Sort trips by created_at in descending order (newest first)
+    tripsToShow.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    tripsToShow.forEach((trip, idx) => {
+        const div = document.createElement("div");
+        div.className = "trip-card";
+        
+        // Count total places
+        let totalPlaces = 0;
+        let daysHtml = "";
+        
+        if(trip.days && trip.days.length > 0) {
+            trip.days.forEach(day => {
+                totalPlaces += day.places ? day.places.length : 0;
+                daysHtml += `<p>Day ${day.day_number}: ${day.places ? day.places.length : 0} place(s)</p>`;
+            });
+        }
+        
+        const createdDate = new Date(trip.created_at).toLocaleDateString();
+        
+        div.innerHTML = `
+            <div class="trip-header">
+                <div>
+                    <strong>${trip.title}</strong>
+                    <p style="color: #666; font-size: 0.9rem;">Type: ${trip.trip_type === 'national' ? 'National' : 'International'}</p>
+                </div>
+                <p style="color: #999; font-size: 0.9rem;">Created: ${createdDate}</p>
+            </div>
+            <div class="trip-details">
+                <p><b>Total Days:</b> ${trip.days ? trip.days.length : 0}</p>
+                <p><b>Total Places:</b> ${totalPlaces}</p>
+                ${trip.estimated_budget ? `<p><b>Estimated Budget:</b> ${trip.estimated_budget}</p>` : ""}
+                <div class="days-summary">
+                    ${daysHtml}
+                </div>
+            </div>
+            <div class="trip-actions">
+                <button type="button" onclick="previewTrip(${idx})" class="preview-btn">Preview</button>
+                <button type="button" onclick="deleteTrip(${idx})" class="delete-btn">Delete</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// ================= SEARCH FUNCTION =================
+function searchTrips(){
+    const query = document.getElementById("searchPlan").value.toLowerCase();
+    const filtered = trips.filter(trip => trip.title.toLowerCase().includes(query));
+    displayTrips(filtered);
+}
+
+// ================= PREVIEW TRIP =================
+function previewTrip(index){
+    const trip = trips[index];
+    
+    // Format trip data for preview.html
+    const itineraryData = [];
+    if(trip.days && trip.days.length > 0) {
+        trip.days.forEach(day => {
+            itineraryData.push({
+                day: day.day_number,
+                places: day.places || []
+            });
+        });
+    }
+    
+    // Save to localStorage in the format preview.html expects
+    localStorage.setItem("multiDayItinerary", JSON.stringify(itineraryData));
+    localStorage.setItem("tripType", trip.trip_type);
+    localStorage.setItem("tripTitle", trip.title);
+    localStorage.setItem("estimatedBudget", trip.estimated_budget || "");
+    
+    // Redirect to preview page
+    window.location.href = "{{ url_for('preview') }}";
+}
+
+// ================= DELETE TRIP =================
+function deleteTrip(index){
+    const trip = trips[index];
+    if(confirm("Are you sure you want to delete '" + trip.title + "'?")){
+        // Call backend API to delete trip
+        fetch("{{ url_for('delete_trip') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ trip_id: trip.id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert("Trip deleted successfully!");
+                window.location.reload();
+            } else {
+                alert("Failed to delete trip: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while deleting the trip.");
+        });
+    }
+}
+
+// Display all trips initially
+displayTrips(trips);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Travel World Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Navigation Bar (copy this to all templates) -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#dashboard">Home</a></li>
+            <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+            <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Header -->
+    <header id="dashboard">
+        <h3 style="margin-bottom: 0.2em; color: #555;">
+            Hii {{ user_name }} welcome to Thejas
+        </h3>
+        <h1 id="welcomeHeading">🌍 Travel Bucket List</h1>
+    </header>
+
+    <!-- Travel Type Section -->
+    <section class="travel-types">
+
+        <!-- National Card -->
+        <div class="card national" id="nationalSection">
+            <img src="{{ url_for('static', filename='images/national.avif') }}" 
+                 alt="National Travel" class="card-image">
+            <h2>National</h2>
+            <p>Explore India</p>
+        </div>
+
+        <!-- International Card -->
+        <div class="card international" id="internationalSection">
+            <img src="{{ url_for('static', filename='images/international.jpg') }}" 
+                 alt="International Travel" class="card-image">
+            <h2>International</h2>
+            <p>Fly over the sea</p>
+        </div>
+
+        <!-- Planning Card -->
+        <div class="card planning" id="planningCard">
+            <img src="{{ url_for('static', filename='images/national.avif') }}" 
+                 alt="Planning" class="card-image">
+            <h2>Planning</h2>
+            <p>Plan the trip</p>
+        </div>
+
+        <!-- Completed Trips Card -->
+        <div class="card completedTrip" id="completedCard">
+            <img src="{{ url_for('static', filename='images/national.avif') }}" 
+                 alt="Completed Trip" class="card-image">
+            <h2>Completed Trips</h2>
+            <p>Trips you finished</p>
+        </div>
+
+    </section>
+
+    <!-- Discover Section -->
+    <section class="discover" id="discover">
+        <h2>Discover Destinations</h2>
+        <div class="discover-cards">
+
+            <div class="small-card stats-card" id="completedStats">
+                <div class="stats-box">
+                    <span class="stats-label">Trips Completed</span>
+                    <span class="stats-value" id="tripsCompletedCount">0</span>
+                </div>
+                <div class="stats-box">
+                    <span class="stats-label">Places Visited</span>
+                    <span class="stats-value" id="placesVisitedCount">0</span>
+                </div>
+            </div>
+
+            <div class="small-card" id="galleryCard">
+                <img src="{{ url_for('static', filename='images/gallery.avif') }}" 
+                     alt="Gallery" class="small-card-image">
+                📸 Gallery
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <footer id="contact">
+        
+        <p>Email: <a href="mailto:tejaspalangot02@gmail.com">tejaspalangot02@gmail.com</a></p>
+        <p>Phone: 123-456-7890</p>
+    </footer>
+
+</div>
+
+<script>
+    // Navigation using correct Flask endpoints
+    document.getElementById('nationalSection').addEventListener('click', () => {
+        window.location.href = "{{ url_for('stateorcountry') }}?type=national";
+    });
+
+    document.getElementById('internationalSection').addEventListener('click', () => {
+        window.location.href = "{{ url_for('stateorcountry') }}?type=international";
+    });
+
+    // Temporary placeholder links for Planning, Completed, Gallery
+    document.getElementById('planningCard').addEventListener('click', () => {
+        window.location.href = "{{ url_for('trip_type') }}";
+    });
+
+    document.getElementById('completedCard').addEventListener('click', () => {
+        window.location.href = "{{ url_for('plan_completed') }}";
+    });
+
+    document.getElementById('galleryCard').addEventListener('click', () => {
+        window.location.href = "gallery.html";
+    });
+
+    // Fetch completed trips stats
+    fetch("{{ url_for('get_completed_trips') }}")
+        .then(res => res.json())
+        .then(data => {
+            const trips = data.trips || [];
+            document.getElementById('tripsCompletedCount').textContent = trips.length;
+            let placesCount = 0;
+            trips.forEach(trip => {
+                if (trip.places) placesCount += trip.places.length;
+            });
+            document.getElementById('placesVisitedCount').textContent = placesCount;
+        });
+</script>
+
+</body>
+</html>

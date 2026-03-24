@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Planner Multi-Day</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='planning.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('stateorcountry') }}">Discover Destinations</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<h1 id="tripTitle"></h1>
+
+<h3>Explore & Filter</h3>
+<div class="category-filter">
+
+    <input type="text" id="searchInput" placeholder="Search place...">
+    <select id="monthFilter">
+        <option value="">All Months</option>
+        <option>January</option><option>February</option>
+        <option>March</option><option>April</option>
+        <option>May</option><option>June</option>
+        <option>July</option><option>August</option>
+        <option>September</option><option>October</option>
+        <option>November</option><option>December</option>
+    </select>
+
+    <select id="stateCountryFilter">
+        <option value="">All State/Country</option>
+    </select>
+
+    <div class="checkbox-grid">
+        <label><input type="checkbox" value="trekking"> Trekking</label>
+        <label><input type="checkbox" value="waterfalls"> Waterfalls</label>
+        <label><input type="checkbox" value="mountain"> Mountain</label>
+        <label><input type="checkbox" value="beaches"> Beaches</label>
+        <label><input type="checkbox" value="temples"> Temples</label>
+        <label><input type="checkbox" value="national park"> National Park</label>
+        <label><input type="checkbox" value="road trip"> Road Trip</label>
+        <label><input type="checkbox" value="historical sites"> Historical Sites</label>
+        <label><input type="checkbox" value="culture"> Culture</label>
+        <label><input type="checkbox" value="city"> City</label>
+        <label><input type="checkbox" value="others"> Others</label>
+    </div>
+
+    <button onclick="applyFilters()">Apply Filters</button>
+</div>
+
+<h2>Search Results</h2>
+<div class="results" id="results"></div>
+
+<h2>Itinerary by Days</h2>
+<div id="daysContainer"></div>
+<button type="button" onclick="addNewDay()">+ Add Day</button>
+<button type="button" onclick="goToPreview()">Preview Itinerary</button>
+
+<script>
+// ================= TRIP TITLE =================
+const tripType = "{{ trip_type }}";
+localStorage.setItem("tripType", tripType); // Save to localStorage for preview page
+document.getElementById("tripTitle").innerText =
+    tripType === "national" ? "National Trip Planning" : "International Trip Planning";
+
+// ================= DATABASE FETCHED =================
+const placesDB = {{ places|tojson }};
+const destinationsList = {{ destinations|tojson }};
+
+// Build state/country filter options
+const stateCountryFilter = document.getElementById("stateCountryFilter");
+destinationsList.forEach(dest => {
+    const option = document.createElement("option");
+    option.value = dest.name;
+    option.textContent = dest.name;
+    stateCountryFilter.appendChild(option);
+});
+
+// ================= MONTH HELPER =================
+const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function isMonthInRange(selectedMonth, fromMonth, toMonth) {
+    const selectedIdx = monthOrder.indexOf(selectedMonth);
+    const fromIdx = monthOrder.indexOf(fromMonth);
+    const toIdx = monthOrder.indexOf(toMonth);
+    
+    if (selectedIdx === -1 || fromIdx === -1 || toIdx === -1) return false;
+    
+    // If range doesn't wrap around year (e.g., Jan to Mar)
+    if (fromIdx <= toIdx) {
+        return selectedIdx >= fromIdx && selectedIdx <= toIdx;
+    }
+    // If range wraps around year (e.g., Nov to Feb)
+    else {
+        return selectedIdx >= fromIdx || selectedIdx <= toIdx;
+    }
+}
+
+// ================= FILTER FUNCTION =================
+function applyFilters(){
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
+    const selectedMonth = document.getElementById("monthFilter").value;
+    const selectedState = document.getElementById("stateCountryFilter").value;
+    const selectedTypes = Array.from(document.querySelectorAll(".checkbox-grid input:checked")).map(cb => cb.value);
+
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    const usedPlaces = new Set();
+    document.querySelectorAll(".place-card").forEach(pc => usedPlaces.add(pc.dataset.name));
+
+    const filtered = placesDB.filter(place => {
+        if(usedPlaces.has(place.name)) return false;
+        const matchesSearch =
+            place.name.toLowerCase().includes(searchValue) ||
+            (place.district && place.district.toLowerCase().includes(searchValue));
+        const matchesMonth = selectedMonth === "" || isMonthInRange(selectedMonth, place.best_time_from, place.best_time_to);
+        const matchesState = selectedState === "" || place.destination_name === selectedState;
+        const matchesType = selectedTypes.length === 0 || (place.things_to_do && selectedTypes.some(type => place.things_to_do.toLowerCase().includes(type)));
+        return matchesSearch && matchesMonth && matchesState && matchesType;
+    });
+
+    if(filtered.length === 0){
+        resultsDiv.innerHTML = "<p>No places found.</p>";
+        return;
+    }
+
+    filtered.forEach(place=>{
+        const div = document.createElement("div");
+        div.className = "place-card";
+        const imageUrl = place.image ? "{{ url_for('static', filename='uploads/') }}" + place.image : "{{ url_for('static', filename='images/national.avif') }}";
+        div.innerHTML = `
+            <div class="place-content">
+                <div class="place-details">
+                    <strong>${place.name}</strong>
+                    <p>${place.description || 'No description'}</p>
+                    <p><b>District:</b> ${place.district || 'N/A'}</p>
+                    <p><b>State/Country:</b> ${place.destination_name}</p>
+                    <p><b>Best Time:</b> ${place.best_time_from || ''} - ${place.best_time_to || ''}</p>
+                    ${place.map_link ? `<a href="${place.map_link}" target="_blank" class="map-link">📍 Google Maps</a>` : ''}
+                    <br><br>
+                    <button onclick="addToItinerary('${place.name}','${place.description || ''}','${place.district || ''}','${place.destination_name}','${place.map_link || ''}','${imageUrl}', getCurrentDayContainer())">Add</button>
+                </div>
+                <div class="place-image"><img src="${imageUrl}" alt="${place.name}"></div>
+            </div>
+        `;
+        resultsDiv.appendChild(div);
+    });
+}
+
+// ================= DAYS MANAGEMENT =================
+let dayCount = 0;
+function addNewDay(){
+    dayCount++;
+    const daysContainer = document.getElementById("daysContainer");
+
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "day-container";
+    dayDiv.dataset.day = dayCount;
+
+    dayDiv.innerHTML = `
+        <h3>Day ${dayCount}</h3>
+        <div class="itinerary" id="day-${dayCount}"></div>
+    `;
+    daysContainer.appendChild(dayDiv);
+}
+
+function getCurrentDayContainer(){
+    if(dayCount === 0) addNewDay();
+    return document.getElementById(`day-${dayCount}`);
+}
+
+// ================= ADD TO ITINERARY =================
+function addToItinerary(name, description, district, stateCountry, mapLink, image, dayItinerary){
+    const allPlaces = document.querySelectorAll(".place-card");
+    for(let pc of allPlaces){
+        if(pc.dataset.name === name){
+            alert("This place is already added to another day!");
+            return;
+        }
+    }
+
+    const div = document.createElement("div");
+    div.className = "place-card";
+    div.dataset.name = name;
+    div.draggable = true;
+
+    div.innerHTML = `
+        <div class="place-content">
+            <div class="place-details">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>${name}</strong>
+                    <button class="delete-btn">Remove</button>
+                </div>
+                <p><b>About:</b> ${description}</p>
+                <p><b>District:</b> ${district}</p>
+                <p><b>State/Country:</b> ${stateCountry}</p>
+                <a href="${mapLink}" target="_blank" class="map-link">📍 Google Maps</a>
+                <p><b>Things to do:</b> <textarea placeholder="Optional"></textarea></p>
+                <p><b>Food to eat:</b> <textarea placeholder="Optional"></textarea></p>
+                <p><b>Things to buy:</b> <textarea placeholder="Optional"></textarea></p>
+                <p><b>Time to spend:</b> <input type="text" placeholder="e.g., 2-3 hours"></p>
+            </div>
+            <div class="place-image"><img src="${image}" alt="${name}"></div>
+        </div>
+    `;
+
+    div.querySelector(".delete-btn").addEventListener("click", ()=>{ div.remove(); rebuildBetweenSections(dayItinerary); });
+    addDragEventsPerDay(div, dayItinerary);
+    dayItinerary.appendChild(div);
+    rebuildBetweenSections(dayItinerary);
+}
+
+// ================= BETWEEN SECTIONS PER DAY =================
+function rebuildBetweenSections(dayItinerary){
+    dayItinerary.querySelectorAll(".between-section").forEach(s=>s.remove());
+    const placeCards = dayItinerary.querySelectorAll(".place-card");
+    placeCards.forEach((place, idx)=>{
+        if(idx===0) return;
+        const betweenDiv = document.createElement("div");
+        betweenDiv.className = "between-section";
+        betweenDiv.style.border = "1px dashed #e63946";
+        betweenDiv.style.padding = "10px";
+        betweenDiv.style.margin = "10px 0";
+        betweenDiv.style.borderRadius = "6px";
+
+        betweenDiv.innerHTML = `
+            <p><b>Distance to next place:</b> <input type="text" placeholder="e.g., 100 km"></p>
+            <p><b>Time required:</b> <input type="text" placeholder="e.g., 2 hours"></p>
+            <p><b>Note:</b> <textarea placeholder="Optional note"></textarea></p>
+        `;
+        dayItinerary.insertBefore(betweenDiv, place);
+    });
+}
+
+// ================= DRAG & DROP PER DAY =================
+let draggedItem = null;
+function addDragEventsPerDay(element, dayItinerary){
+    element.addEventListener("dragstart", ()=>{ draggedItem = element; element.style.opacity="0.5"; });
+    element.addEventListener("dragend", ()=>{
+        draggedItem = null;
+        element.style.opacity="1";
+        rebuildBetweenSections(dayItinerary);
+    });
+    element.addEventListener("dragover", e=>{ e.preventDefault(); });
+    element.addEventListener("drop", e=>{
+        e.preventDefault();
+        if(draggedItem !== element){
+            element.parentNode.insertBefore(draggedItem, element);
+        }
+    });
+}
+
+// ================= PREVIEW BUTTON =================
+function goToPreview(){
+    try {
+        if(dayCount === 0){
+            alert("Please add at least one day to your itinerary!");
+            return;
+        }
+        
+        const itineraryData = [];
+        const dayContainers = document.querySelectorAll(".day-container");
+        
+        if(dayContainers.length === 0){
+            alert("No days found in itinerary!");
+            return;
+        }
+        
+        dayContainers.forEach(day => {
+            const dayId = day.dataset.day;
+            const itinerary = day.querySelector(".itinerary");
+            
+            if(!itinerary) return;
+            
+            const dayPlaces = [];
+            const placeCards = itinerary.querySelectorAll(".place-card");
+            const betweenSections = itinerary.querySelectorAll(".between-section");
+            
+            placeCards.forEach((pc, placeIndex) => {
+                try {
+                    const details = pc.querySelector(".place-details");
+                    if(!details) return;
+                    
+                    // Get all paragraphs
+                    const paragraphs = details.querySelectorAll("p");
+                    const textareas = details.querySelectorAll("textarea");
+                    const input = details.querySelector("input[type='text']");
+                    
+                    let about = "No description";
+                    if(paragraphs[0]) {
+                        about = paragraphs[0].innerText.replace("<b>About:</b>", "").trim();
+                    }
+                    
+                    let thingsToDo = "";
+                    if(textareas[0]) {
+                        thingsToDo = textareas[0].value;
+                    }
+                    
+                    let food = "";
+                    if(textareas[1]) {
+                        food = textareas[1].value;
+                    }
+                    
+                    let thingsToBuy = "";
+                    if(textareas[2]) {
+                        thingsToBuy = textareas[2].value;
+                    }
+                    
+                    let timeToSpend = "";
+                    if(input) {
+                        timeToSpend = input.value;
+                    }
+                    
+                    // Get distance and time to next place from between-section
+                    let distanceToNext = "";
+                    let timeToNext = "";
+                    let notes = "";
+                    
+                    if(placeIndex < betweenSections.length) {
+                        const betweenSection = betweenSections[placeIndex];
+                        const betweenInputs = betweenSection.querySelectorAll("input[type='text']");
+                        const betweenTextarea = betweenSection.querySelector("textarea");
+                        
+                        if(betweenInputs[0]) distanceToNext = betweenInputs[0].value;
+                        if(betweenInputs[1]) timeToNext = betweenInputs[1].value;
+                        if(betweenTextarea) notes = betweenTextarea.value;
+                    }
+                    
+                    dayPlaces.push({
+                        name: pc.dataset.name,
+                        about: about,
+                        thingsToDo: thingsToDo,
+                        food: food,
+                        thingsToBuy: thingsToBuy,
+                        timeToSpend: timeToSpend,
+                        distanceToNext: distanceToNext,
+                        timeToNext: timeToNext,
+                        notes: notes
+                    });
+                } catch(innerError) {
+                    console.error("Error processing place card:", innerError);
+                }
+            });
+            
+            if(dayPlaces.length > 0) {
+                itineraryData.push({ day: dayId, places: dayPlaces });
+            }
+        });
+        
+        if(itineraryData.length === 0 || !itineraryData[0].places || itineraryData[0].places.length === 0){
+            alert("Please add at least one place to your itinerary!");
+            return;
+        }
+        
+        localStorage.setItem("multiDayItinerary", JSON.stringify(itineraryData));
+        window.location.href = "{{ url_for('preview') }}";
+    } catch(error) {
+        console.error("Error in goToPreview:", error);
+        alert("An error occurred: " + error.message);
+    }
+}
+
+document.getElementById("searchInput").addEventListener("input", applyFilters);
+</script>
+</body>
+</html>

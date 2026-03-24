@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trip Photos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/photos.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="dashboard.html">Home</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 id="tripTitleHeading">Trip Photos</h1>
+        <div class="photos-grid" id="photosGrid">
+            <!-- Photos will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Get query parameters
+        const params = new URLSearchParams(window.location.search);
+        const folderId = params.get('folderId');
+        const tripTitle = params.get('title');
+
+        document.getElementById('tripTitleHeading').textContent = tripTitle;
+
+        const photosGrid = document.getElementById('photosGrid');
+
+        // Function to fetch files from Google Drive folder
+        async function fetchDriveFiles(folderId) {
+            // You need Google Drive API key and enable public access to files in folder
+            // For simplicity, this example assumes files are shared publicly
+            // Real implementation would require API + OAuth
+            try {
+                const query = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=YOUR_API_KEY&fields=files(id,name,mimeType,webContentLink,thumbnailLink)`;
+                const res = await fetch(query);
+                const data = await res.json();
+
+                data.files.forEach(file => {
+                    if(file.mimeType.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = file.thumbnailLink || file.webContentLink;
+                        img.alt = file.name;
+                        img.className = 'photo-item';
+                        photosGrid.appendChild(img);
+                    }
+                });
+
+            } catch(err) {
+                console.error(err);
+                photosGrid.innerHTML = '<p style="color:red;">Failed to load photos. Make sure the folder is public and API key is valid.</p>';
+            }
+        }
+
+        if(folderId) {
+            fetchDriveFiles(folderId);
+        } else {
+            photosGrid.innerHTML = '<p style="color:red;">No folder specified.</p>';
+        }
+    </script>
+</body>
+</html>

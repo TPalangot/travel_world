@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Trip Type</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='trip_type.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h1>Select Trip Type</h1>
+
+    <div class="buttons">
+        <button class="btn" onclick="selectTrip('national')">National</button>
+        <button class="btn" onclick="selectTrip('international')">International</button>
+    </div>
+
+    <div class="buttons">
+        <button class="btn" onclick="upcoming()">Upcoming Trip</button>
+        <button class="btn" onclick="completed()">completed</button>
+    </div>
+</div>
+
+<script>
+function selectTrip(type){
+    window.location.href = "{{ url_for('planning') }}?type=" + type;
+}
+
+function upcoming(){
+    window.location.href = "{{ url_for('upcoming') }}";
+}
+
+function completed(){
+    window.location.href = "{{ url_for('completed_trip') }}";
+}
+</script>
+
+</body>
+</html>

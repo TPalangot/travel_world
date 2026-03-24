@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Completed Plans</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../static/plan_completed.css">
+
+</head>
+<body>
+
+<nav class="navbar">
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}">Home</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='national') }}">National</a></li>
+        <li><a href="{{ url_for('stateorcountry', type='international') }}">International</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="plan-completed-container">
+    <h1 class="plan-completed-title">Completed Plans</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchPlan" placeholder="Search by Plan Title or Place...">
+
+        <select id="yearFilter">
+            <option value="">All Years</option>
+            {% for year in years %}
+                <option value="{{ year }}">{{ year }}</option>
+            {% endfor %}
+        </select>
+
+        <button onclick="searchPlans()">Search</button>
+    </div>
+
+    <div id="plansContainer"></div>
+</div>
+
+<!-- Popup -->
+<div id="previewPopup">
+    <div class="popup-content">
+        <button class="close-btn" onclick="closePopup()">Close</button>
+        <div id="popupContent"></div>
+    </div>
+</div>
+
+<script>
+let trips = [];
+
+// ================= FETCH DATA =================
+fetch("{{ url_for('get_completed_trips') }}")
+    .then(res => res.json())
+    .then(data => {
+        trips = data.trips || [];
+        displayPlans(trips);
+    })
+    .catch(err => {
+        console.error("Error fetching trips:", err);
+    });
+
+// ================= DISPLAY =================
+function displayPlans(tripsList) {
+    const container = document.getElementById("plansContainer");
+    container.innerHTML = "";
+
+    if (tripsList.length === 0) {
+        container.innerHTML = "<p>No completed plans found.</p>";
+        return;
+    }
+
+    tripsList.forEach((trip, idx) => {
+        const div = document.createElement("div");
+        div.className = "completed-trip-card";
+
+        div.innerHTML = `
+            <div class="completed-trip-title">${trip.title || "Untitled"}</div>
+
+            ${trip.title_image ? 
+                `<img src='static/uploads/${trip.title_image}' class='completed-trip-cover'>` 
+                : ""}
+
+            <div class="completed-trip-date">
+                <b>Date:</b> ${
+                    trip.visit_date
+                        ? (new Date(trip.visit_date)).toISOString().split('T')[0]
+                        : "N/A"
+                }
+            </div>
+
+            <div class="completed-trip-experience">
+                <b>Experience:</b> ${trip.description || "No experience recorded"}
+            </div>
+
+            ${trip.google_drive_link ? 
+                `<div class='completed-trip-link'>
+                    <b>Photos:</b> 
+                    <a href='${trip.google_drive_link}' target='_blank'>Google Drive</a>
+                </div>` 
+                : ""}
+
+            <div class='completed-trip-places'>
+                <strong>Places Visited:</strong>
+                ${
+                    trip.places && trip.places.length > 0
+                    ? trip.places.map(place => 
+                        `<span>${place.name || ""} (${place.destination_name || ""})</span>`
+                      ).join("")
+                    : "<span>No places recorded</span>"
+                }
+            </div>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+// ================= SEARCH + YEAR FILTER =================
+function searchPlans() {
+    const query = document.getElementById("searchPlan").value.toLowerCase();
+    const selectedYear = document.getElementById("yearFilter").value;
+
+    const filtered = trips.filter(plan => {
+
+        // ===== YEAR FILTER =====
+        let yearMatch = true;
+        if (selectedYear) {
+            if (plan.visit_date) {
+                const dateObj = new Date(plan.visit_date);
+                if (!isNaN(dateObj)) {
+                    const planYear = dateObj.getFullYear().toString();
+                    yearMatch = planYear === selectedYear;
+                } else {
+                    yearMatch = false;
+                }
+            } else {
+                yearMatch = false;
+            }
+        }
+
+        // ===== TEXT FILTER (title, place, or state) =====
+        let textMatch = true;
+        if (query) {
+            const titleMatch = plan.title &&
+                plan.title.toLowerCase().includes(query);
+
+            const placeMatch = plan.places &&
+                plan.places.some(place =>
+                    (place.name && place.name.toLowerCase().includes(query)) ||
+                    (place.destination_name && place.destination_name.toLowerCase().includes(query))
+                );
+
+            textMatch = titleMatch || placeMatch;
+        }
+
+        return yearMatch && textMatch;
+    });
+
+    displayPlans(filtered);
+}
+
+// ================= POPUP =================
+function previewPlan(index) {
+    const plan = trips[index];
+    const popupContent = document.getElementById("popupContent");
+
+    popupContent.innerHTML = `
+        <h2>${plan.title}</h2>
+        <p><b>Estimated Budget:</b> ${plan.estimatedBudget || "N/A"}</p>
+    `;
+
+    if (plan.itinerary) {
+        plan.itinerary.forEach(dayData => {
+            const dayDiv = document.createElement("div");
+
+            dayDiv.innerHTML = `<h3>Day ${dayData.day}</h3>`;
+
+            dayData.places.forEach(place => {
+                const placeDiv = document.createElement("div");
+
+                placeDiv.style.border = "1px solid #ccc";
+                placeDiv.style.padding = "5px";
+                placeDiv.style.margin = "5px 0";
+
+                placeDiv.innerHTML = `
+                    <strong>${place.name}</strong>
+                    <p><b>About:</b> ${place.about}</p>
+                    <p><b>Things to do:</b> ${place.thingsToDo || "N/A"}</p>
+                    <p><b>Food:</b> ${place.food || "N/A"}</p>
+                    <p><b>Shopping:</b> ${place.thingsToBuy || "N/A"}</p>
+                    <p><b>Time:</b> ${place.timeToSpend || "N/A"}</p>
+                `;
+
+                dayDiv.appendChild(placeDiv);
+            });
+
+            popupContent.appendChild(dayDiv);
+        });
+    }
+
+    document.getElementById("previewPopup").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("previewPopup").style.display = "none";
+}
+
+// ================= AUTO SEARCH =================
+document.getElementById('searchPlan').addEventListener('input', searchPlans);
+document.getElementById('yearFilter').addEventListener('change', searchPlans);
+
+</script>
+
+</body>
+</html>

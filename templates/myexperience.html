@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Trip Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles/myexperience.css">
+<style>
+/* Simple NavBar Styles */
+.navbar {
+    background: #2d3e50;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    padding: 0.7em 2em;
+    gap: 2em;
+}
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 1.5em;
+    transition: color 0.2s;
+}
+.navbar a:hover {
+    color: #ffd700;
+}
+.navbar .logo {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin-right: auto;
+    letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- NavBar Start -->
+<nav class="navbar">
+    <span class="logo">Travel Diary</span>
+    <a href="index.html">Home</a>
+    <a href="myexperience.html">Add Experience</a>
+    <a href="completed_trip.html">My Trips</a>
+    <a href="about.html">About</a>
+</nav>
+<!-- NavBar End -->
+
+<h1>My Trip Experience</h1>
+
+<div class="experience-form">
+
+    <!-- Trip Basic Info -->
+    <label for="tripTitle"><b>Trip Title:</b></label>
+    <input type="text" id="tripTitle" placeholder="Enter trip title">
+
+    <label><b>Trip Dates:</b></label>
+    <div style="display:flex; gap:10px;">
+        <input type="date" id="tripStartDate">
+        <input type="date" id="tripEndDate">
+    </div>
+
+    <label for="tripBudget"><b>Estimated Budget:</b></label>
+    <input type="text" id="tripBudget" placeholder="Enter budget">
+
+    <!-- Dynamic Locations -->
+    <h3>Places Visited</h3>
+    <div id="placesContainer"></div>
+    <button type="button" id="addPlaceBtn">+ Add Place</button>
+
+    <!-- Trip Highlights -->
+    <label for="tripHighlights"><b>Highlights:</b></label>
+    <textarea id="tripHighlights" placeholder="Best moments or highlights..." rows="4"></textarea>
+
+    <!-- Gallery / Links -->
+    <label for="tripGallery"><b>Photos / Links:</b></label>
+    <textarea id="tripGallery" placeholder="Paste image URLs or notes..." rows="3"></textarea>
+
+    <!-- People Met -->
+    <h3>People Met (Optional)</h3>
+    <div id="peopleContainer"></div>
+    <button type="button" id="addPersonBtn">+ Add Person</button>
+
+    <button id="saveTripBtn">Save Trip</button>
+    <button id="cancelBtn">Cancel</button>
+</div>
+
+<script>
+// ================= DUMMY LOCATIONS =================
+// For now, these will be in the dropdown. Later fetch from DB.
+const dummyPlaces = ["Goa", "Manali", "Paris", "Tokyo", "New York", "London"];
+
+// ================= ADD PLACE =================
+let placeCount = 0;
+document.getElementById("addPlaceBtn").addEventListener("click", () => {
+    placeCount++;
+    const container = document.getElementById("placesContainer");
+    const div = document.createElement("div");
+    div.className = "place-item";
+    div.dataset.index = placeCount;
+
+    div.innerHTML = `
+        <label><b>Place ${placeCount}:</b></label>
+        <select class="placeName">
+            ${dummyPlaces.map(p => `<option value="${p}">${p}</option>`).join('')}
+        </select>
+        <textarea class="placeDescription" placeholder="Your experience / notes" rows="3"></textarea>
+        <input type="text" class="placePhoto" placeholder="Photo URL">
+        <button type="button" class="removePlaceBtn">Remove</button>
+        <hr>
+    `;
+    container.appendChild(div);
+
+    div.querySelector(".removePlaceBtn").addEventListener("click", ()=>{
+        div.remove();
+    });
+});
+
+// ================= ADD PERSON =================
+let personCount = 0;
+document.getElementById("addPersonBtn").addEventListener("click", () => {
+    personCount++;
+    const container = document.getElementById("peopleContainer");
+    const div = document.createElement("div");
+    div.className = "person-item";
+    div.dataset.index = personCount;
+
+    div.innerHTML = `
+        <label><b>Person ${personCount}:</b></label>
+        <input type="text" class="personName" placeholder="Name">
+        <input type="text" class="personContact" placeholder="Contact">
+        <input type="email" class="personEmail" placeholder="Email">
+        <input type="text" class="personPhoto" placeholder="Photo URL (optional)">
+        <textarea class="personNotes" placeholder="Small description..." rows="2"></textarea>
+        <button type="button" class="removePersonBtn">Remove</button>
+        <hr>
+    `;
+    container.appendChild(div);
+
+    div.querySelector(".removePersonBtn").addEventListener("click", ()=>{
+        div.remove();
+    });
+});
+
+// ================= SAVE TRIP =================
+document.getElementById("saveTripBtn").addEventListener("click", () => {
+    const title = document.getElementById("tripTitle").value.trim();
+    const startDate = document.getElementById("tripStartDate").value;
+    const endDate = document.getElementById("tripEndDate").value;
+    const budget = document.getElementById("tripBudget").value.trim();
+    const highlights = document.getElementById("tripHighlights").value.trim();
+    const gallery = document.getElementById("tripGallery").value.trim();
+
+    if(!title){
+        alert("Trip Title is required!");
+        return;
+    }
+
+    // Gather places
+    const places = Array.from(document.querySelectorAll(".place-item")).map(div=>({
+        name: div.querySelector(".placeName").value,
+        description: div.querySelector(".placeDescription").value,
+        photo: div.querySelector(".placePhoto").value
+    }));
+
+    // Gather people
+    const people = Array.from(document.querySelectorAll(".person-item")).map(div=>({
+        name: div.querySelector(".personName").value,
+        contact: div.querySelector(".personContact").value,
+        email: div.querySelector(".personEmail").value,
+        photo: div.querySelector(".personPhoto").value,
+        notes: div.querySelector(".personNotes").value
+    }));
+
+    // Save to localStorage for now
+    const tripData = { title, startDate, endDate, budget, places, highlights, gallery, people };
+    let completedTrips = JSON.parse(localStorage.getItem("completedTrips") || "[]");
+
+    // Check if editing existing trip
+    const selectedTrip = JSON.parse(localStorage.getItem("selectedTrip") || "null");
+    if(selectedTrip){
+        const index = completedTrips.findIndex(t => t.title === selectedTrip.title);
+        if(index !== -1){
+            completedTrips[index] = tripData;
+        }
+    } else {
+        completedTrips.push(tripData);
+    }
+
+    localStorage.setItem("completedTrips", JSON.stringify(completedTrips));
+    alert("Trip saved successfully!");
+    window.location.href = "completed_trip.html";
+});
+
+// ================= CANCEL =================
+document.getElementById("cancelBtn").addEventListener("click", () => {
+    window.location.href = "completed_trip.html";
+});
+
+// ================= LOAD EXISTING TRIP =================
+const selectedTrip = JSON.parse(localStorage.getItem("selectedTrip") || "null");
+if(selectedTrip){
+    document.getElementById("tripTitle").value = selectedTrip.title || "";
+    document.getElementById("tripStartDate").value = selectedTrip.startDate || "";
+    document.getElementById("tripEndDate").value = selectedTrip.endDate || "";
+    document.getElementById("tripBudget").value = selectedTrip.budget || "";
+    document.getElementById("tripHighlights").value = selectedTrip.highlights || "";
+    document.getElementById("tripGallery").value = selectedTrip.gallery || "";
+
+    // Load places
+    if(selectedTrip.places){
+        selectedTrip.places.forEach(p=>{
+            document.getElementById("addPlaceBtn").click();
+            const div = document.querySelector(".place-item:last-child");
+            div.querySelector(".placeName").value = p.name;
+            div.querySelector(".placeDescription").value = p.description;
+            div.querySelector(".placePhoto").value = p.photo;
+        });
+    }
+
+    // Load people
+    if(selectedTrip.people){
+        selectedTrip.people.forEach(p=>{
+            document.getElementById("addPersonBtn").click();
+            const div = document.querySelector(".person-item:last-child");
+            div.querySelector(".personName").value = p.name;
+            div.querySelector(".personContact").value = p.contact;
+            div.querySelector(".personEmail").value = p.email;
+            div.querySelector(".personPhoto").value = p.photo;
+            div.querySelector(".personNotes").value = p.notes;
+        });
+    }
+}
+</script>
+
+</body>
+</html>
