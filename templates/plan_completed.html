@@ -91,7 +91,21 @@ function displayPlans(tripsList) {
             </div>
 
             <div class="completed-trip-experience">
-                <b>Experience:</b> ${trip.description || "No experience recorded"}
+                <b>Experience:</b>
+                {% raw %}
+                ${
+                    (trip.description && trip.description.split(' ').length > 15)
+                    ? `<span class="short-desc">
+                            ${trip.description.split(' ').slice(0, 15).join(' ')}...
+                            <a href="javascript:void(0);" class="read-more" onclick="showFullDesc(this)">Read more</a>
+                           </span>
+                           <span class="full-desc" style="display:none;">
+                            ${trip.description}
+                            <a href="javascript:void(0);" class="read-less" onclick="hideFullDesc(this)">Read less</a>
+                           </span>`
+                    : (trip.description || "No experience recorded")
+                }
+                {% endraw %}
             </div>
 
             ${trip.google_drive_link ? 
@@ -211,6 +225,21 @@ function closePopup() {
 document.getElementById('searchPlan').addEventListener('input', searchPlans);
 document.getElementById('yearFilter').addEventListener('change', searchPlans);
 
+</script>
+
+<script>
+function showFullDesc(link) {
+    const shortDesc = link.closest('.short-desc');
+    const fullDesc = shortDesc.nextElementSibling;
+    shortDesc.style.display = 'none';
+    fullDesc.style.display = '';
+}
+function hideFullDesc(link) {
+    const fullDesc = link.closest('.full-desc');
+    const shortDesc = fullDesc.previousElementSibling;
+    fullDesc.style.display = 'none';
+    shortDesc.style.display = '';
+}
 </script>
 
 </body>

@@ -159,7 +159,18 @@ function displayTrips(trips) {
                 <div class="trip-info">
                     <p><b>Budget:</b> ${trip.budget || "N/A"}</p>
                     ${trip.google_drive_link ? `<p><b>📸 Photos:</b> <a href="${trip.google_drive_link}" target="_blank" class="drive-link">View on Google Drive</a></p>` : ""}
-                    <p><b>Experience:</b> ${trip.description || "No experience recorded"}</p>
+                    <p><b>Experience:</b> ${
+                        trip.description && trip.description.split(' ').length > 15
+                        ? `<span class="short-desc">
+                                ${trip.description.split(' ').slice(0, 15).join(' ')}...
+                                <a href="javascript:void(0);" class="read-more" onclick="showFullDesc(this)">Read more</a>
+                           </span>
+                           <span class="full-desc" style="display:none;">
+                                ${trip.description}
+                                <a href="javascript:void(0);" class="read-less" onclick="hideFullDesc(this)">Read less</a>
+                           </span>`
+                        : (trip.description || "No experience recorded")
+                    }</p>
                 </div>
                 <div class="trip-places">
                     <b>Places Visited:</b>
@@ -406,6 +417,20 @@ function enlargeImage(src) {
 }
 function closeImageModal() {
     document.getElementById("imageModal").style.display = "none";
+}
+
+// ================= SHOW FULL DESCRIPTION =================
+function showFullDesc(link) {
+    const shortDesc = link.closest('.short-desc');
+    const fullDesc = shortDesc.nextElementSibling;
+    shortDesc.style.display = 'none';
+    fullDesc.style.display = '';
+}
+function hideFullDesc(link) {
+    const fullDesc = link.closest('.full-desc');
+    const shortDesc = fullDesc.previousElementSibling;
+    fullDesc.style.display = 'none';
+    shortDesc.style.display = '';
 }
 
 </script>

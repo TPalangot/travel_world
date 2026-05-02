@@ -45,7 +45,21 @@
                     {% endif %}
                     <div class="destination-content">
                         <h3>{{ destination.name }}</h3>
-                        <p>{{ destination.description }}</p>
+                        <p>
+                            {% set words = destination.description.split() %}
+                            {% if words|length > 15 %}
+                                <span class="short-desc">
+                                    {{ words[:15]|join(' ') }}...
+                                    <a href="javascript:void(0);" class="read-more" onclick="showFullDesc(this)">Read more</a>
+                                </span>
+                                <span class="full-desc" style="display:none;">
+                                    {{ destination.description }}
+                                    <a href="javascript:void(0);" class="read-less" onclick="hideFullDesc(this)">Read less</a>
+                                </span>
+                            {% else %}
+                                {{ destination.description }}
+                            {% endif %}
+                        </p>
                         <div class="destination-actions">
                             <a href="{{ url_for('places', destination_id=destination.id) }}" class="details-btn">View Places</a>
                             {% if role == 'admin' %}
@@ -117,6 +131,21 @@ document.getElementById('liveSearch').addEventListener('input', function() {
         noResultMsg.style.display = anyVisible ? 'none' : '';
     }
 });
+</script>
+
+<script>
+function showFullDesc(link) {
+    const shortDesc = link.closest('.short-desc');
+    const fullDesc = shortDesc.nextElementSibling;
+    shortDesc.style.display = 'none';
+    fullDesc.style.display = '';
+}
+function hideFullDesc(link) {
+    const fullDesc = link.closest('.full-desc');
+    const shortDesc = fullDesc.previousElementSibling;
+    fullDesc.style.display = 'none';
+    shortDesc.style.display = '';
+}
 </script>
 
 </body>

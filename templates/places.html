@@ -137,7 +137,21 @@
                         </span>
                         {% endif %}
                     </h4>
-                    <p>{{ place.description }}</p>
+                    <p>
+                        {% set words = place.description.split() %}
+                        {% if words|length > 15 %}
+                            <span class="short-desc">
+                                {{ words[:15]|join(' ') }}...
+                                <a href="javascript:void(0);" class="read-more" onclick="showFullDesc(this)">Read more</a>
+                            </span>
+                            <span class="full-desc" style="display:none;">
+                                {{ place.description }}
+                                <a href="javascript:void(0);" class="read-less" onclick="hideFullDesc(this)">Read less</a>
+                            </span>
+                        {% else %}
+                            {{ place.description }}
+                        {% endif %}
+                    </p>
                     <span><strong>District:</strong> {{ place.district }}</span><br>
                     <span><strong>Things To Do:</strong> {{ place.things_to_do }}</span><br>
                     <span><strong>Best Time:</strong> {{ place.best_time_from }} – {{ place.best_time_to }}</span>
@@ -349,6 +363,21 @@ document.getElementById('liveSearch').addEventListener('input', function() {
         }
     });
 });
+</script>
+
+<script>
+function showFullDesc(link) {
+    const shortDesc = link.closest('.short-desc');
+    const fullDesc = shortDesc.nextElementSibling;
+    shortDesc.style.display = 'none';
+    fullDesc.style.display = '';
+}
+function hideFullDesc(link) {
+    const fullDesc = link.closest('.full-desc');
+    const shortDesc = fullDesc.previousElementSibling;
+    fullDesc.style.display = 'none';
+    shortDesc.style.display = '';
+}
 </script>
 
 </body>
